@@ -26,15 +26,19 @@ def load_excel_data():
         if file_size > 0:
             try:
                 st.write(f"File found: {file_path}, Size: {file_size} bytes.")
-                df = pd.read_excel(file_path)
+                # Specify the engine explicitly
+                df = pd.read_excel(file_path, engine='openpyxl')
                 return df
             except ValueError as e:
                 st.error(f"Error reading the Excel file: {e}")
+            except Exception as e:
+                st.error(f"An unexpected error occurred: {e}")
         else:
             st.error("The downloaded Excel file is empty.")
     else:
         st.error("Excel file not found.")
     return None
+
 
 # Download and load the Excel data
 download_excel_from_github()
