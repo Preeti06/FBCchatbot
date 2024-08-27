@@ -26,7 +26,6 @@ def load_excel_data():
         file_size = os.path.getsize(file_path)
         if file_size > 0:
             try:
-                st.write(f"File found: {file_path}, Size: {file_size} bytes.")
                 # Specify the engine explicitly
                 df = pd.read_excel(file_path, engine='openpyxl')
                 return df
