@@ -58,7 +58,8 @@ st.markdown("""
 st.markdown("<div class='title'>💬 FBC Chatbot: here to help FBCs answer questions from franchise owners </div>", unsafe_allow_html=True)
 
 # Display sample questions for users to try with a light blue background, deep blue font, and italic font
-st.markdown("<div class='sample-questions'><strong>Sample Questions</strong><br>"
+st.markdown("<div class='sample-questions' style='background-color: #BBDEFB; color: #0D47A1; padding: 15px; border-radius: 10px; font-style: italic;'>"
+            "<strong>Sample Questions</strong><br>"
             "- What are the reporting requirements for franchises?<br>"
             "- Can a franchise deviate from the standard operating procedures?<br>"
             "- What should be done if an employee violates the conduct policy?<br>"
