@@ -3,12 +3,11 @@ from openai import OpenAI
 import os
 
 # Show title and description.
-st.write(
+st.header(
     "I am a chatbot that can help FBCs answer some of the questions they get from the owners."
 )
 
 # Display sample questions for users to try
-st.header("Sample Questions")
 st.write(
     """
     Here are some example questions you can ask me:
