@@ -51,4 +51,17 @@ if st.session_state.openai_api_key:
 
         # Store and display the current prompt.
         st.session_state.messages.append({"role": "user", "content": prompt})
- 
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Prepare the context for the chatbot by including relevant policy document text.
+        context = ""
+        if "franchise" in prompt.lower():
+            context = documents.get("Franchise Operations Policy", "")
+        elif "employee" in prompt.lower() or "conduct" in prompt.lower():
+            context = documents.get("Employee Conduct Policy", "")
+
+        # Combine the context with the user's prompt for the OpenAI API.
+        system_message = (
+            "You are a helpful assistant with access to the following policy documents. "
+            "Use the content to answer questions accura
