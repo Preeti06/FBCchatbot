@@ -64,4 +64,21 @@ if st.session_state.openai_api_key:
         # Combine the context with the user's prompt for the OpenAI API.
         system_message = (
             "You are a helpful assistant with access to the following policy documents. "
-            "Use the content to answer questions accura
+            "Use the content to answer questions accurately."
+        )
+        messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": f"{context}\n\n{prompt}"},
+        ]
+
+        # Generate a response using the OpenAI API.
+        stream = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            stream=True,
+        )
+
+        # Stream the response to the chat and store it in session state.
+        with st.chat_message("assistant"):
+            response = st.write_stream(stream)
+        st.session_state.messages.append({"role": "assistant", "content": response})
