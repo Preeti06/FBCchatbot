@@ -4,7 +4,7 @@ import os
 
 # Show title and description.
 st.header(
-    "An FBC-Chatbot to answer questions."
+    "FBC-Chatbot to answer questions."
 )
 
 # Display sample questions for users to try
