@@ -1,3 +1,5 @@
 streamlit
 openai
 openpyxl
+s3fs==2024.6.1
+st-files-connection
