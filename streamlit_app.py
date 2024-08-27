@@ -54,3 +54,22 @@ else:
         with st.chat_message("assistant"):
             response = st.write_stream(stream)
         st.session_state.messages.append({"role": "assistant", "content": response})
+import os
+
+st.title("FBC Policy Documents")
+
+# Create a dropdown to select a document
+doc_options = {
+    "Franchise Operations Policy": "policy_doc_1.txt",
+    "Employee Conduct Policy": "policy_doc_2.txt",
+}
+selected_doc = st.selectbox("Select a document to view:", options=list(doc_options.keys()))
+
+# Load and display the selected document
+doc_path = doc_options[selected_doc]
+if os.path.exists(doc_path):
+    with open(doc_path, "r") as file:
+        document_content = file.read()
+        st.text_area("Document Content", document_content, height=300)
+else:
+    st.error(f"Document '{selected_doc}' not found.")
