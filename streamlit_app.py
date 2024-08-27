@@ -7,6 +7,20 @@ st.write(
     "I am a chatbot that can help FBCs answer some of the questions they get from the owners."
 )
 
+# Display sample questions for users to try
+st.header("Sample Questions")
+st.write(
+    """
+    Here are some example questions you can ask me:
+    
+    - "What are the reporting requirements for franchises?"
+    - "Can a franchise deviate from the standard operating procedures?"
+    - "What should be done if an employee violates the conduct policy?"
+    - "Is there a dress code employees need to follow?"
+    - "What policies should a franchise follow regarding employee training?"
+    """
+)
+
 # Load policy documents into memory
 doc_options = {
     "Franchise Operations Policy": "policy_doc_1.txt",
