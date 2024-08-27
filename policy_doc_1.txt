@@ -1,7 +1,35 @@
 Title: Franchise Operations Policy
 
-1. All franchises must adhere to the standard operating procedures (SOP) as outlined in the franchise manual.
-2. Franchises are required to submit weekly sales reports by end of business day Monday.
-3. Any deviations from the SOP must be reported to the Franchise Business Consultant (FBC) immediately.
+---
 
-Contact: operations@franchise.com
+**1. Standard Operating Procedures (SOP):**
+   - All franchises must adhere to the standard operating procedures (SOP) as outlined in the franchise manual. This includes but is not limited to daily operations, customer service protocols, financial management, and inventory controls.
+   - SOP updates will be communicated quarterly. Franchisees are responsible for implementing changes within 30 days of receiving notice.
+
+**2. Reporting Requirements:**
+   - Franchises are required to submit weekly sales reports by the end of the business day on Monday. These reports must include detailed breakdowns of daily sales, inventory levels, and employee performance metrics.
+   - Monthly financial summaries, including profit and loss statements, must be submitted by the 5th of each month.
+   - Any discrepancies or irregularities in financial reports must be reported immediately to the Franchise Business Consultant (FBC).
+
+**3. Compliance and Audits:**
+   - Franchises will undergo routine audits twice a year to ensure compliance with corporate standards. Audits will review financial records, customer feedback, and adherence to SOPs.
+   - Non-compliance identified during audits must be rectified within 14 days. Failure to comply may result in penalties or, in severe cases, termination of the franchise agreement.
+
+**4. Marketing and Promotions:**
+   - All marketing and promotional activities must be pre-approved by the corporate marketing department. Unauthorized use of the brand’s trademarks or logos is strictly prohibited.
+   - Franchises are required to participate in national marketing campaigns. Local campaigns are encouraged but must align with the brand’s overall marketing strategy.
+
+**5. Training and Development:**
+   - Franchise owners and their management teams must complete mandatory training programs annually. These programs cover new SOPs, customer service strategies, and leadership development.
+   - Continuous training modules will be provided online and must be completed by all staff within the specified timelines.
+
+**6. Communication with Corporate:**
+   - Franchisees must maintain open lines of communication with their FBC. Regular meetings, both virtual and in-person, will be scheduled to discuss performance, challenges, and opportunities for growth.
+   - All significant changes in business operations, such as changes in management or operating hours, must be reported to the FBC at least 14 days in advance.
+
+---
+
+**Contact Information:**
+   - For any inquiries related to operations, compliance, or audits, please contact operations@franchise.com.
+   - For marketing and promotional support, reach out to marketing@franchise.com.
+   - For training resources and support, email training@franchise.com.
