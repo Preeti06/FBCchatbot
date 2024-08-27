@@ -2,23 +2,69 @@ import streamlit as st
 from openai import OpenAI
 import os
 
-# Show title and description.
-st.header(
-    "FBC-Chatbot to answer questions."
-)
+# Custom CSS to style the app
+st.markdown("""
+    <style>
+    body {
+        background-color: #f5f5f5;
+        font-family: 'Arial', sans-serif;
+    }
+    .title {
+        font-size: 36px;
+        color: #333;
+        text-align: center;
+        padding: 20px 0;
+    }
+    .description {
+        font-size: 18px;
+        color: #777;
+        text-align: center;
+        padding-bottom: 20px;
+    }
+    .chat-message {
+        border-radius: 15px;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    .user-message {
+        background-color: #DCF8C6;
+        text-align: right;
+        margin-right: 10px;
+    }
+    .bot-message {
+        background-color: #EAEAEA;
+        text-align: left;
+        margin-left: 10px;
+    }
+    .sample-questions {
+        font-size: 20px;
+        color: #444;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .input-box {
+        padding: 15px;
+        border-radius: 15px;
+        font-size: 18px;
+        border: 2px solid #ccc;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Header with a title
+st.markdown("<div class='title'>💬 FBC Chatbot</div>", unsafe_allow_html=True)
+st.markdown("<div class='description'>I am here to help FBCs answer questions from franchise owners.</div>", unsafe_allow_html=True)
 
 # Display sample questions for users to try
-st.write(
-    """
-    Here are some example questions you can ask me:
-    
-    - "What are the reporting requirements for franchises?"
-    - "Can a franchise deviate from the standard operating procedures?"
-    - "What should be done if an employee violates the conduct policy?"
-    - "Is there a dress code employees need to follow?"
-    - "What policies should a franchise follow regarding employee training?"
-    """
-)
+st.markdown("<div class='sample-questions'><strong>Sample Questions</strong><br>"
+            "- What are the reporting requirements for franchises?<br>"
+            "- Can a franchise deviate from the standard operating procedures?<br>"
+            "- What should be done if an employee violates the conduct policy?<br>"
+            "- Is there a dress code employees need to follow?<br>"
+            "- What policies should a franchise follow regarding employee training?</div>",
+            unsafe_allow_html=True)
 
 # Load policy documents into memory
 doc_options = {
@@ -35,7 +81,7 @@ for title, filepath in doc_options.items():
         st.error(f"Document '{filepath}' not found.")
 
 # Ask user for their OpenAI API key via `st.text_input`.
-openai_api_key = st.text_input("OpenAI API Key", type="password")
+openai_api_key = st.text_input("OpenAI API Key", type="password", key="input-box")
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
@@ -46,18 +92,16 @@ else:
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Display the existing chat messages.
+    # Display the existing chat messages with custom styling.
     for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+        message_class = "user-message" if message["role"] == "user" else "bot-message"
+        st.markdown(f"<div class='chat-message {message_class}'>{message['content']}</div>", unsafe_allow_html=True)
 
-    # Create a chat input field.
-    if prompt := st.chat_input("Ask a question:"):
-
+    # Create a chat input field with custom styling.
+    if prompt := st.text_input("Ask a question:", key="chat-input"):
         # Store and display the current prompt.
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+        st.markdown(f"<div class='chat-message user-message'>{prompt}</div>", unsafe_allow_html=True)
 
         # Prepare the context for the chatbot by including relevant policy document text.
         context = ""
@@ -84,6 +128,9 @@ else:
         )
 
         # Stream the response to the chat and store it in session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
+        response = ""
+        for message in stream:
+            response += message["choices"][0]["delta"].get("content", "")
+
+        st.markdown(f"<div class='chat-message bot-message'>{response}</div>", unsafe_allow_html=True)
         st.session_state.messages.append({"role": "assistant", "content": response})
