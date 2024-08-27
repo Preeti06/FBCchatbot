@@ -30,9 +30,9 @@ if not st.session_state.openai_api_key:
     openai_api_key = st.text_input("OpenAI API Key", type="password")
     if openai_api_key:
         st.session_state.openai_api_key = openai_api_key
-        st.experimental_rerun()  # Optionally rerun to immediately hide the input after setting the key
+        st.experimental_rerun()  # Rerun the script to immediately hide the input after setting the key
 
-# Proceed if the API key is available
+# If the API key is set, proceed with the chatbot functionality
 if st.session_state.openai_api_key:
     # Create an OpenAI client.
     client = OpenAI(api_key=st.session_state.openai_api_key)
@@ -51,34 +51,4 @@ if st.session_state.openai_api_key:
 
         # Store and display the current prompt.
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Prepare the context for the chatbot by including relevant policy document text.
-        context = ""
-        if "franchise" in prompt.lower():
-            context = documents.get("Franchise Operations Policy", "")
-        elif "employee" in prompt.lower() or "conduct" in prompt.lower():
-            context = documents.get("Employee Conduct Policy", "")
-
-        # Combine the context with the user's prompt for the OpenAI API.
-        system_message = (
-            "You are a helpful assistant with access to the following policy documents. "
-            "Use the content to answer questions accurately."
-        )
-        messages = [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": f"{context}\n\n{prompt}"},
-        ]
-
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            stream=True,
-        )
-
-        # Stream the response to the chat and store it in session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+ 
