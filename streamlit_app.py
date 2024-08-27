@@ -30,55 +30,25 @@ if not st.session_state.openai_api_key:
     openai_api_key = st.text_input("OpenAI API Key", type="password")
     if openai_api_key:
         st.session_state.openai_api_key = openai_api_key
-        st.experimental_rerun()  # Rerun the script to immediately hide the input after setting the key
+        # Skip the rerun, the app will naturally proceed to the next part on the next run
 
 # If the API key is set, proceed with the chatbot functionality
 if st.session_state.openai_api_key:
-    # Create an OpenAI client.
-    client = OpenAI(api_key=st.session_state.openai_api_key)
+    try:
+        # Create an OpenAI client.
+        client = OpenAI(api_key=st.session_state.openai_api_key)
 
-    # Create a session state variable to store the chat messages.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+        # Create a session state variable to store the chat messages.
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
 
-    # Display the existing chat messages.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+        # Display the existing chat messages.
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-    # Create a chat input field.
-    if prompt := st.chat_input("Ask a question:"):
+        # Create a chat input field.
+        if prompt := st.chat_input("Ask a question:"):
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Prepare the context for the chatbot by including relevant policy document text.
-        context = ""
-        if "franchise" in prompt.lower():
-            context = documents.get("Franchise Operations Policy", "")
-        elif "employee" in prompt.lower() or "conduct" in prompt.lower():
-            context = documents.get("Employee Conduct Policy", "")
-
-        # Combine the context with the user's prompt for the OpenAI API.
-        system_message = (
-            "You are a helpful assistant with access to the following policy documents. "
-            "Use the content to answer questions accurately."
-        )
-        messages = [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": f"{context}\n\n{prompt}"},
-        ]
-
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            stream=True,
-        )
-
-        # Stream the response to the chat and store it in session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            # Store and display the current prompt.
+           
