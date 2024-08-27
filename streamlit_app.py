@@ -21,21 +21,13 @@ for title, filepath in doc_options.items():
     else:
         st.error(f"Document '{filepath}' not found.")
 
-# Check if the API key is in session state
-if "openai_api_key" not in st.session_state:
-    st.session_state.openai_api_key = ""
-
-# If the API key is not set, display the input field
-if not st.session_state.openai_api_key:
-    openai_api_key = st.text_input("OpenAI API Key", type="password")
-    if openai_api_key:
-        st.session_state.openai_api_key = openai_api_key
-        st.experimental_rerun()  # Optionally rerun to immediately hide the input after setting the key
-
-# Proceed if the API key is available
-if st.session_state.openai_api_key:
+# Ask user for their OpenAI API key via `st.text_input`.
+openai_api_key = st.text_input("OpenAI API Key", type="password")
+if not openai_api_key:
+    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
+else:
     # Create an OpenAI client.
-    client = OpenAI(api_key=st.session_state.openai_api_key)
+    client = OpenAI(api_key=openai_api_key)
 
     # Create a session state variable to store the chat messages.
     if "messages" not in st.session_state:
@@ -57,4 +49,28 @@ if st.session_state.openai_api_key:
         # Prepare the context for the chatbot by including relevant policy document text.
         context = ""
         if "franchise" in prompt.lower():
-            cont
+            context = documents.get("Franchise Operations Policy", "")
+        elif "employee" in prompt.lower() or "conduct" in prompt.lower():
+            context = documents.get("Employee Conduct Policy", "")
+
+        # Combine the context with the user's prompt for the OpenAI API.
+        system_message = (
+            "You are a helpful assistant with access to the following policy documents. "
+            "Use the content to answer questions accurately."
+        )
+        messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": f"{context}\n\n{prompt}"},
+        ]
+
+        # Generate a response using the OpenAI API.
+        stream = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            stream=True,
+        )
+
+        # Stream the response to the chat and store it in session state.
+        with st.chat_message("assistant"):
+            response = st.write_stream(stream)
+        st.session_state.messages.append({"role": "assistant", "content": response})
