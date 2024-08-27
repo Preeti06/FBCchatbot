@@ -4,34 +4,28 @@ import os
 
 # Show title and description.
 st.write(
-    "Hello I am chatbot that can help FBCs answer some of the questions they get from the owners "
+    "I am a chatbot that can help FBCs answer some of the questions they get from the owners."
 )
 
-# Policy Document Section
-st.header("FBC Policy Documents")
-
-# Create a dropdown to select a document
+# Load policy documents into memory
 doc_options = {
     "Franchise Operations Policy": "policy_doc_1.txt",
     "Employee Conduct Policy": "policy_doc_2.txt",
 }
-selected_doc = st.selectbox("Select a document to view:", options=list(doc_options.keys()))
 
-# Load and display the selected document
-doc_path = doc_options[selected_doc]
-if os.path.exists(doc_path):
-    with open(doc_path, "r") as file:
-        document_content = file.read()
-        st.text_area("Document Content", document_content, height=300)
-else:
-    st.error(f"Document '{selected_doc}' not found.")
+documents = {}
+for title, filepath in doc_options.items():
+    if os.path.exists(filepath):
+        with open(filepath, "r") as file:
+            documents[title] = file.read()
+    else:
+        st.error(f"Document '{filepath}' not found.")
 
 # Ask user for their OpenAI API key via `st.text_input`.
 openai_api_key = st.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
-
     # Create an OpenAI client.
     client = OpenAI(api_key=openai_api_key)
 
@@ -45,20 +39,34 @@ else:
             st.markdown(message["content"])
 
     # Create a chat input field.
-    if prompt := st.chat_input("What is up?"):
+    if prompt := st.chat_input("Ask a question:"):
 
         # Store and display the current prompt.
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
+        # Prepare the context for the chatbot by including relevant policy document text.
+        context = ""
+        if "franchise" in prompt.lower():
+            context = documents.get("Franchise Operations Policy", "")
+        elif "employee" in prompt.lower() or "conduct" in prompt.lower():
+            context = documents.get("Employee Conduct Policy", "")
+
+        # Combine the context with the user's prompt for the OpenAI API.
+        system_message = (
+            "You are a helpful assistant with access to the following policy documents. "
+            "Use the content to answer questions accurately."
+        )
+        messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": f"{context}\n\n{prompt}"},
+        ]
+
         # Generate a response using the OpenAI API.
         stream = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
+            messages=messages,
             stream=True,
         )
 
