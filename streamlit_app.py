@@ -20,12 +20,21 @@ def download_excel_from_github():
 
 # Function to load the Excel data into a Pandas DataFrame
 def load_excel_data():
-    if os.path.exists("data.xlsx"):
-        df = pd.read_excel("data.xlsx")
-        return df
+    file_path = "data.xlsx"
+    if os.path.exists(file_path):
+        file_size = os.path.getsize(file_path)
+        if file_size > 0:
+            try:
+                st.write(f"File found: {file_path}, Size: {file_size} bytes.")
+                df = pd.read_excel(file_path)
+                return df
+            except ValueError as e:
+                st.error(f"Error reading the Excel file: {e}")
+        else:
+            st.error("The downloaded Excel file is empty.")
     else:
         st.error("Excel file not found.")
-        return None
+    return None
 
 # Download and load the Excel data
 download_excel_from_github()
