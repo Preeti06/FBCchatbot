@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 import pandas as pd
 import requests
+from st_files_connection import FilesConnection
 
 # Function to download the Excel file from GitHub
 def download_excel_from_github():
@@ -61,20 +62,21 @@ if df is not None:
             - "Can you identify any sales trends?"
         </p>
     """, unsafe_allow_html=True)
+conn = st.connection('s3', type=FilesConnection)
 
 # Load policy documents into memory
-doc_options = {
-    "Franchise Operations Policy": "policy_doc_1.txt",
-    "Employee Conduct Policy": "policy_doc_2.txt",
-}
+#doc_options = {
+#    "Franchise Operations Policy": "policy_doc_1.txt",
+#    "Employee Conduct Policy": "policy_doc_2.txt",
+#}
 
-documents = {}
-for title, filepath in doc_options.items():
-    if os.path.exists(filepath):
-        with open(filepath, "r") as file:
-            documents[title] = file.read()
-    else:
-        st.error(f"Document '{filepath}' not found.")
+#documents = {}
+#for title, filepath in doc_options.items():
+#    if os.path.exists(filepath):
+#        with open(filepath, "r") as file:
+#            documents[title] = file.read()
+#    else:
+#        st.error(f"Document '{filepath}' not found.")
 
 # Ask user for their OpenAI API key via `st.text_input`.
 openai_api_key = st.text_input("OpenAI API Key", type="password")
@@ -104,9 +106,11 @@ else:
         # Prepare the context for the chatbot by including relevant policy document text.
         context = ""
         if "franchise" in prompt.lower():
-            context = documents.get("Franchise Operations Policy", "")
+            #context = documents.get("Franchise Operations Policy", "")
+            context = conn.read("fbc-hackathon-test/policy_doc_1.txt", input_format="text", ttl=600)
         elif "employee" in prompt.lower() or "conduct" in prompt.lower():
-            context = documents.get("Employee Conduct Policy", "")
+            #context = documents.get("Employee Conduct Policy", "")
+            context = conn.read("fbc-hackathon-test/policy_doc_2.txt", input_format="text", ttl=600)
 
         # Convert the DataFrame to a string and add it to the context
         if df is not None:
