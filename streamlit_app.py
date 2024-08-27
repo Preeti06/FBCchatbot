@@ -13,7 +13,6 @@ def download_excel_from_github():
         if response.status_code == 200:
             with open("data.xlsx", "wb") as file:
                 file.write(response.content)
-            # Removed log message to keep it silent.
         else:
             st.error(f"Failed to download the Excel file. Status code: {response.status_code}")
     except Exception as e:
@@ -23,22 +22,14 @@ def download_excel_from_github():
 def load_excel_data():
     file_path = "data.xlsx"
     if os.path.exists(file_path):
-        file_size = os.path.getsize(file_path)
-        if file_size > 0:
-            try:
-                # Specify the engine explicitly
-                df = pd.read_excel(file_path, engine='openpyxl')
-                return df
-            except ValueError as e:
-                st.error(f"Error reading the Excel file: {e}")
-            except Exception as e:
-                st.error(f"An unexpected error occurred: {e}")
-        else:
-            st.error("The downloaded Excel file is empty.")
+        try:
+            df = pd.read_excel(file_path, engine='openpyxl')
+            return df
+        except Exception as e:
+            st.error(f"An error occurred while reading the Excel file: {e}")
     else:
         st.error("Excel file not found.")
     return None
-
 
 # Download and load the Excel data
 download_excel_from_github()
@@ -47,35 +38,22 @@ df = load_excel_data()
 # Show title and description.
 st.title("FBC Chatbot - here to help")
 
-# Display the Excel data if it's loaded successfully
-if df is not None:
-    st.write("### Excel Data")
-    st.dataframe(df)
+# Remove the section that displays the Excel data
+# if df is not None:
+#     st.write("### Excel Data")
+#     st.dataframe(df)
 
-    # Display sample questions for users to try with a smaller font size for the header
-    st.markdown("""
-        <p style='font-style: italic;'>
-            Here are some example questions you can ask me about the data:<br>
-            - "What are the top-performing franchises?"<br>
-            - "Which franchises have the highest operating costs?"<br>
-            - "Can you identify any sales trends?"
-        </p>
-    """, unsafe_allow_html=True)
+# Display sample questions for users to try with a smaller font size for the header
+st.markdown("""
+    <p style='font-style: italic;'>
+        Here are some example questions you can ask me about the data:<br>
+        - "What are the top-performing franchises?"<br>
+        - "Which franchises have the highest operating costs?"<br>
+        - "Can you identify any sales trends?"
+    </p>
+""", unsafe_allow_html=True)
+
 conn = st.connection('s3', type=FilesConnection)
-
-# Load policy documents into memory
-#doc_options = {
-#    "Franchise Operations Policy": "policy_doc_1.txt",
-#    "Employee Conduct Policy": "policy_doc_2.txt",
-#}
-
-#documents = {}
-#for title, filepath in doc_options.items():
-#    if os.path.exists(filepath):
-#        with open(filepath, "r") as file:
-#            documents[title] = file.read()
-#    else:
-#        st.error(f"Document '{filepath}' not found.")
 
 # Ask user for their OpenAI API key via `st.text_input`.
 openai_api_key = st.text_input("OpenAI API Key", type="password")
@@ -105,15 +83,9 @@ else:
         # Prepare the context for the chatbot by including relevant policy document text.
         context = ""
         if "franchise" in prompt.lower():
-            #context = documents.get("Franchise Operations Policy", "")
             context = conn.read("fbc-hackathon-test/policy_doc_1.txt", input_format="text", ttl=600)
         elif "employee" in prompt.lower() or "conduct" in prompt.lower():
-            #context = documents.get("Employee Conduct Policy", "")
             context = conn.read("fbc-hackathon-test/policy_doc_2.txt", input_format="text", ttl=600)
-
-        # Convert the DataFrame to a string and add it to the context
-        if df is not None:
-            context += "\n\n" + df.to_string()
 
         # Combine the context with the user's prompt for the OpenAI API.
         system_message = (
