@@ -1,7 +1,42 @@
 Title: Employee Conduct Policy
 
-1. All employees must complete the mandatory training on customer service and workplace safety.
-2. Any incidents of misconduct must be reported to the HR department within 24 hours.
-3. Employees are expected to adhere to the dress code policy as specified in the employee handbook.
+---
 
-Contact: hr@franchise.com
+**1. Code of Conduct:**
+   - All employees are expected to adhere to the highest standards of professionalism. This includes maintaining a respectful and inclusive work environment, providing exceptional customer service, and upholding the franchise’s reputation.
+   - Employees must not engage in any behavior that could harm the brand's image, including, but not limited to, harassment, discrimination, or unethical business practices.
+
+**2. Mandatory Training:**
+   - All employees must complete the mandatory training on customer service, workplace safety, and anti-discrimination policies within their first 30 days of employment.
+   - Refresher courses are required annually. Employees who fail to complete mandatory training may face disciplinary action, including suspension or termination.
+
+**3. Attendance and Punctuality:**
+   - Employees are expected to arrive on time for their scheduled shifts and remain on duty until their shift ends. Chronic lateness or unexcused absences will result in disciplinary action.
+   - Any planned absences must be communicated to the supervisor at least 24 hours in advance. In case of emergencies, the employee must notify their supervisor as soon as possible.
+
+**4. Dress Code Policy:**
+   - Employees must adhere to the dress code as specified in the employee handbook. This includes wearing the appropriate uniform, maintaining personal hygiene, and ensuring a neat appearance at all times.
+   - Unauthorized alterations to the uniform or non-compliance with the dress code will result in disciplinary measures.
+
+**5. Reporting Misconduct:**
+   - Any incidents of misconduct, including harassment, theft, or violations of company policies, must be reported to the HR department within 24 hours. Employees can report incidents confidentially through the company’s whistleblower hotline.
+   - The company has a zero-tolerance policy for retaliation against employees who report misconduct.
+
+**6. Use of Company Resources:**
+   - Employees are expected to use company resources, including computers, phones, and proprietary information, for business purposes only. Personal use of these resources should be minimal and must not interfere with job responsibilities.
+   - Any misuse of company resources will be subject to investigation and could result in termination.
+
+**7. Health and Safety:**
+   - Employees must adhere to all health and safety regulations, including the use of personal protective equipment (PPE) when required. Regular safety drills will be conducted, and participation is mandatory.
+   - Any workplace hazards or safety concerns must be reported to the safety officer immediately.
+
+**8. Disciplinary Procedures:**
+   - The company follows a progressive disciplinary procedure for violations of company policies. This may include verbal warnings, written warnings, suspension, and termination, depending on the severity of the offense.
+   - Employees have the right to appeal disciplinary actions by submitting a formal request to the HR department within seven days of the action being taken.
+
+---
+
+**Contact Information:**
+   - For HR-related inquiries, including reporting misconduct, please contact hr@franchise.com.
+   - For health and safety concerns, reach out to safety@franchise.com.
+   - For issues related to training, email training@franchise.com.
