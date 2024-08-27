@@ -7,7 +7,7 @@ from st_files_connection import FilesConnection
 
 # Function to download the Excel file from GitHub
 def download_excel_from_github():
-    url = "https://github.com/Preeti06/FBCchatbot/blob/main/Operations%20ScoreCard.xlsx"
+    url = "https://github.com/Preeti06/FBCchatbot/blob/main/Test_sheet.xlsx"
     try:
         response = requests.get(url)
         if response.status_code == 200:
