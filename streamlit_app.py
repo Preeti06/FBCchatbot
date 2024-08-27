@@ -22,12 +22,17 @@ for title, filepath in doc_options.items():
         st.error(f"Document '{filepath}' not found.")
 
 # Ask user for their OpenAI API key via `st.text_input`.
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
+if "openai_api_key" not in st.session_state:
+    st.session_state.openai_api_key = ""
+
+if not st.session_state.openai_api_key:
+    openai_api_key = st.text_input("OpenAI API Key", type="password")
+    if openai_api_key:
+        st.session_state.openai_api_key = openai_api_key
+        st.experimental_rerun()  # Rerun the script to hide the input after key is set.
 else:
     # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+    client = OpenAI(api_key=st.session_state.openai_api_key)
 
     # Create a session state variable to store the chat messages.
     if "messages" not in st.session_state:
