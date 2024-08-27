@@ -3,7 +3,7 @@ from openai import OpenAI
 import os
 
 # Show title and description.
-st.Title(
+st.title(
     "FBC Chatbot"
 )
 
