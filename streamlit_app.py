@@ -1,23 +1,49 @@
 import streamlit as st
 from openai import OpenAI
 import os
+import pandas as pd
+import requests
+
+# Function to download the Excel file from GitHub
+def download_excel_from_github():
+    url = "https://raw.githubusercontent.com/your-username/your-repo-name/main/your-file-path.xlsx"
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open("data.xlsx", "wb") as file:
+            file.write(response.content)
+    else:
+        st.error("Failed to download the Excel file.")
+
+# Function to load the Excel data into a Pandas DataFrame
+def load_excel_data():
+    if os.path.exists("data.xlsx"):
+        df = pd.read_excel("data.xlsx")
+        return df
+    else:
+        st.error("Excel file not found.")
+        return None
+
+# Download and load the Excel data
+download_excel_from_github()
+df = load_excel_data()
 
 # Show title and description.
-st.title(
-    "FBC Chatbot - here to help"
-)
+st.title("FBC Chatbot - here to help")
 
-# Display sample questions for users to try with a smaller font size for the header
-st.markdown("""
-    <p style='font-style: italic;'>
-        Here are some example questions you can ask me:<br>
-        - "What are the reporting requirements for franchises?"<br>
-        - "Can a franchise deviate from the standard operating procedures?"<br>
-        - "What should be done if an employee violates the conduct policy?"<br>
-        - "Is there a dress code employees need to follow?"<br>
-        - "What policies should a franchise follow regarding employee training?"
-    </p>
-""", unsafe_allow_html=True)
+# Display the Excel data if it's loaded successfully
+if df is not None:
+    st.write("### Excel Data")
+    st.dataframe(df)
+
+    # Display sample questions for users to try with a smaller font size for the header
+    st.markdown("""
+        <p style='font-style: italic;'>
+            Here are some example questions you can ask me about the data:<br>
+            - "What are the top-performing franchises?"<br>
+            - "Which franchises have the highest operating costs?"<br>
+            - "Can you identify any sales trends?"
+        </p>
+    """, unsafe_allow_html=True)
 
 # Load policy documents into memory
 doc_options = {
@@ -65,9 +91,13 @@ else:
         elif "employee" in prompt.lower() or "conduct" in prompt.lower():
             context = documents.get("Employee Conduct Policy", "")
 
+        # Convert the DataFrame to a string and add it to the context
+        if df is not None:
+            context += "\n\n" + df.to_string()
+
         # Combine the context with the user's prompt for the OpenAI API.
         system_message = (
-            "You are a helpful assistant with access to the following policy documents. "
+            "You are a helpful assistant with access to the following policy documents and business data. "
             "Use the content to answer questions accurately."
         )
         messages = [
