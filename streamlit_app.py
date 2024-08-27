@@ -11,15 +11,17 @@ st.markdown("""
     }
     .title {
         font-size: 36px;
-        color: #0D47A1;  /* Deep Blue color */
+        color: #2E7D32;  /* Dark Green color */
         text-align: center;
         padding: 20px 0;
     }
     .description {
-        font-size: 18px;
-        color: #333333;  /* Dark Charcoal color */
+        font-size: 20px;
+        color: #2E7D32;  /* Dark Green color */
+        background-color: #E8F5E9;  /* Light Green background */
+        padding: 10px;
+        border-radius: 8px;
         text-align: center;
-        padding-bottom: 20px;
     }
     .chat-message {
         border-radius: 15px;
@@ -27,19 +29,19 @@ st.markdown("""
         margin: 10px 0;
     }
     .user-message {
-        background-color: #D5F5E3;  /* Light Green background */
+        background-color: #A5D6A7;  /* Light Green background */
         text-align: right;
         margin-right: 10px;
     }
     .bot-message {
-        background-color: #ECEFF1;  /* Light Grayish Blue background */
+        background-color: #E8F5E9;  /* Lighter Green background */
         text-align: left;
         margin-left: 10px;
     }
     .sample-questions {
         font-size: 18px;
-        color: #0D47A1;  /* Deep Blue color */
-        background-color: #E3F2FD;  /* Soft Blue background */
+        color: #1B5E20;  /* Deep Green color */
+        background-color: #C8E6C9;  /* Soft Green background */
         padding: 15px;
         border-radius: 10px;
         margin-bottom: 20px;
@@ -55,10 +57,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header with a title
-st.markdown("<div class='title'>💬 FBC Chatbot: here to help FBCs answer questions from franchise owners </div>", unsafe_allow_html=True)
+st.markdown("<div class='title' style='color: #2E7D32;'>💬 FBC Chatbot</div>", unsafe_allow_html=True)
+st.markdown("<div class='description' style='color: #2E7D32; font-size: 20px; background-color: #E8F5E9; padding: 10px; border-radius: 8px;'>"
+            "I am here to help FBCs answer questions from franchise owners."
+            "</div>", unsafe_allow_html=True)
 
-# Display sample questions for users to try with a light blue background, deep blue font, and italic font
-st.markdown("<div class='sample-questions' style='background-color: #BBDEFB; color: #0D47A1; padding: 15px; border-radius: 10px; font-style: italic;'>"
+# Display sample questions for users to try with a green color scheme
+st.markdown("<div class='sample-questions' style='background-color: #C8E6C9; color: #1B5E20; padding: 15px; border-radius: 10px; font-style: italic;'>"
             "<strong>Sample Questions</strong><br>"
             "- What are the reporting requirements for franchises?<br>"
             "- Can a franchise deviate from the standard operating procedures?<br>"
