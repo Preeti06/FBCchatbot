@@ -4,22 +4,20 @@ import os
 
 # Show title and description.
 st.title(
-    "FBC Chatbot"
+    "FBC Chatbot - here to help"
 )
 
 # Display sample questions for users to try with a smaller font size for the header
-st.markdown("<h3 style='font-size:20px;'>Sample Questions</h3>", unsafe_allow_html=True)
-st.write(
-    """
-    Here are some example questions you can ask me:
-    
-    - "What are the reporting requirements for franchises?"
-    - "Can a franchise deviate from the standard operating procedures?"
-    - "What should be done if an employee violates the conduct policy?"
-    - "Is there a dress code employees need to follow?"
-    - "What policies should a franchise follow regarding employee training?"
-    """
-)
+st.markdown("""
+    <p style='font-style: italic;'>
+        Here are some example questions you can ask me:<br>
+        - "What are the reporting requirements for franchises?"<br>
+        - "Can a franchise deviate from the standard operating procedures?"<br>
+        - "What should be done if an employee violates the conduct policy?"<br>
+        - "Is there a dress code employees need to follow?"<br>
+        - "What policies should a franchise follow regarding employee training?"
+    </p>
+""", unsafe_allow_html=True)
 
 # Load policy documents into memory
 doc_options = {
