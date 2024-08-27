@@ -37,12 +37,13 @@ st.markdown("""
         margin-left: 10px;
     }
     .sample-questions {
-        font-size: 20px;
-        color: #444;
-        background-color: #f0f0f0;
-        padding: 10px;
+        font-size: 18px;
+        color: #2F4F4F;  /* Dark slate gray color */
+        background-color: #CCFFCC;  /* Light green background */
+        padding: 15px;
         border-radius: 10px;
         margin-bottom: 20px;
+        font-style: italic;  /* Italic font style */
     }
     .input-box {
         padding: 15px;
@@ -57,7 +58,7 @@ st.markdown("""
 st.markdown("<div class='title'>💬 FBC Chatbot</div>", unsafe_allow_html=True)
 st.markdown("<div class='description'>I am here to help FBCs answer questions from franchise owners.</div>", unsafe_allow_html=True)
 
-# Display sample questions for users to try with a smaller font size for the header
+# Display sample questions for users to try with a light green background, complementary font color, and italic font
 st.markdown("<div class='sample-questions'><strong>Sample Questions</strong><br>"
             "- What are the reporting requirements for franchises?<br>"
             "- Can a franchise deviate from the standard operating procedures?<br>"
