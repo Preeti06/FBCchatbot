@@ -6,13 +6,17 @@ import requests
 
 # Function to download the Excel file from GitHub
 def download_excel_from_github():
-    url = "https://github.com/Preeti06/FBCchatbot/blob/main/Operations%20ScoreCard.xlsx"
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open("data.xlsx", "wb") as file:
-            file.write(response.content)
-    else:
-        st.error("Failed to download the Excel file.")
+    url = "https://raw.githubusercontent.com/your-username/your-repo-name/main/path/to/your-file.xlsx"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open("data.xlsx", "wb") as file:
+                file.write(response.content)
+            st.write("Excel file downloaded successfully.")
+        else:
+            st.error(f"Failed to download the Excel file. Status code: {response.status_code}")
+    except Exception as e:
+        st.error(f"An error occurred while downloading the Excel file: {e}")
 
 # Function to load the Excel data into a Pandas DataFrame
 def load_excel_data():
