@@ -13,7 +13,7 @@ def download_excel_from_github():
         if response.status_code == 200:
             with open("data.xlsx", "wb") as file:
                 file.write(response.content)
-            st.write("Excel file downloaded successfully.")
+            # Removed log message to keep it silent.
         else:
             st.error(f"Failed to download the Excel file. Status code: {response.status_code}")
     except Exception as e:
