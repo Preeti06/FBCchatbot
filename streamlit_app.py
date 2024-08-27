@@ -11,13 +11,13 @@ st.markdown("""
     }
     .title {
         font-size: 36px;
-        color: #333;
+        color: #006400;  /* Dark green color */
         text-align: center;
         padding: 20px 0;
     }
     .description {
         font-size: 18px;
-        color: #777;
+        color: #006400;  /* Dark green color */
         text-align: center;
         padding-bottom: 20px;
     }
@@ -57,7 +57,7 @@ st.markdown("""
 st.markdown("<div class='title'>💬 FBC Chatbot</div>", unsafe_allow_html=True)
 st.markdown("<div class='description'>I am here to help FBCs answer questions from franchise owners.</div>", unsafe_allow_html=True)
 
-# Display sample questions for users to try
+# Display sample questions for users to try with a smaller font size for the header
 st.markdown("<div class='sample-questions'><strong>Sample Questions</strong><br>"
             "- What are the reporting requirements for franchises?<br>"
             "- Can a franchise deviate from the standard operating procedures?<br>"
