@@ -58,9 +58,6 @@ st.markdown("""
 
 # Header with a title
 st.markdown("<div class='title' style='color: #2E7D32;'>💬 FBC Chatbot</div>", unsafe_allow_html=True)
-st.markdown("<div class='description' style='color: #2E7D32; font-size: 20px; background-color: #E8F5E9; padding: 10px; border-radius: 8px;'>"
-            "I am here to help FBCs answer questions from franchise owners."
-            "</div>", unsafe_allow_html=True)
 
 # Display sample questions for users to try with a green color scheme
 st.markdown("<div class='sample-questions' style='background-color: #C8E6C9; color: #1B5E20; padding: 15px; border-radius: 10px; font-style: italic;'>"
