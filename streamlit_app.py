@@ -2,72 +2,24 @@ import streamlit as st
 from openai import OpenAI
 import os
 
-# Custom CSS to style the app
-st.markdown("""
-    <style>
-    body {
-        background-color: #F0F0F0;  /* Light gray background */
-        font-family: 'Arial', sans-serif;
-    }
-    .title {
-        font-size: 36px;
-        color: #2E7D32;  /* Dark Green color */
-        text-align: center;
-        padding: 20px 0;
-    }
-    .description {
-        font-size: 20px;
-        color: #2E7D32;  /* Dark Green color */
-        background-color: #E8F5E9;  /* Light Green background */
-        padding: 10px;
-        border-radius: 8px;
-        text-align: center;
-    }
-    .chat-message {
-        border-radius: 15px;
-        padding: 10px;
-        margin: 10px 0;
-    }
-    .user-message {
-        background-color: #A5D6A7;  /* Light Green background */
-        text-align: right;
-        margin-right: 10px;
-    }
-    .bot-message {
-        background-color: #E8F5E9;  /* Lighter Green background */
-        text-align: left;
-        margin-left: 10px;
-    }
-    .sample-questions {
-        font-size: 18px;
-        color: #1B5E20;  /* Deep Green color */
-        background-color: #C8E6C9;  /* Soft Green background */
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        font-style: italic;
-    }
-    .input-box {
-        padding: 15px;
-        border-radius: 15px;
-        font-size: 18px;
-        border: 2px solid #ccc;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# Show title and description.
+st.Title(
+    "FBC Chatbot"
+)
 
-# Header with a title
-st.markdown("<div class='title' style='color: #2E7D32;'>💬 FBC Chatbot</div>", unsafe_allow_html=True)
-
-# Display sample questions for users to try with a green color scheme
-st.markdown("<div class='sample-questions' style='background-color: #C8E6C9; color: #1B5E20; padding: 15px; border-radius: 10px; font-style: italic;'>"
-            "<strong>Sample Questions</strong><br>"
-            "- What are the reporting requirements for franchises?<br>"
-            "- Can a franchise deviate from the standard operating procedures?<br>"
-            "- What should be done if an employee violates the conduct policy?<br>"
-            "- Is there a dress code employees need to follow?<br>"
-            "- What policies should a franchise follow regarding employee training?</div>",
-            unsafe_allow_html=True)
+# Display sample questions for users to try with a smaller font size for the header
+st.markdown("<h3 style='font-size:20px;'>Sample Questions</h3>", unsafe_allow_html=True)
+st.write(
+    """
+    Here are some example questions you can ask me:
+    
+    - "What are the reporting requirements for franchises?"
+    - "Can a franchise deviate from the standard operating procedures?"
+    - "What should be done if an employee violates the conduct policy?"
+    - "Is there a dress code employees need to follow?"
+    - "What policies should a franchise follow regarding employee training?"
+    """
+)
 
 # Load policy documents into memory
 doc_options = {
@@ -84,7 +36,7 @@ for title, filepath in doc_options.items():
         st.error(f"Document '{filepath}' not found.")
 
 # Ask user for their OpenAI API key via `st.text_input`.
-openai_api_key = st.text_input("OpenAI API Key", type="password", key="input-box")
+openai_api_key = st.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
@@ -95,16 +47,18 @@ else:
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Display the existing chat messages with custom styling.
+    # Display the existing chat messages.
     for message in st.session_state.messages:
-        message_class = "user-message" if message["role"] == "user" else "bot-message"
-        st.markdown(f"<div class='chat-message {message_class}'>{message['content']}</div>", unsafe_allow_html=True)
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-    # Create a chat input field with custom styling.
-    if prompt := st.text_input("Ask a question:", key="chat-input"):
+    # Create a chat input field.
+    if prompt := st.chat_input("Ask a question:"):
+
         # Store and display the current prompt.
         st.session_state.messages.append({"role": "user", "content": prompt})
-        st.markdown(f"<div class='chat-message user-message'>{prompt}</div>", unsafe_allow_html=True)
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
         # Prepare the context for the chatbot by including relevant policy document text.
         context = ""
@@ -131,9 +85,6 @@ else:
         )
 
         # Stream the response to the chat and store it in session state.
-        response = ""
-        for message in stream:
-            response += message["choices"][0]["delta"].get("content", "")
-
-        st.markdown(f"<div class='chat-message bot-message'>{response}</div>", unsafe_allow_html=True)
+        with st.chat_message("assistant"):
+            response = st.write_stream(stream)
         st.session_state.messages.append({"role": "assistant", "content": response})
