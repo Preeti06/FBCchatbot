@@ -6,7 +6,7 @@ import requests
 
 # Function to download the Excel file from GitHub
 def download_excel_from_github():
-    url = "https://raw.githubusercontent.com/your-username/your-repo-name/main/path/to/your-file.xlsx"
+    url = "https://github.com/Preeti06/FBCchatbot/blob/main/Operations%20ScoreCard.xlsx"
     try:
         response = requests.get(url)
         if response.status_code == 200:
