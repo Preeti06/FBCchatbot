@@ -6,18 +6,18 @@ import os
 st.markdown("""
     <style>
     body {
-        background-color: #f5f5f5;
+        background-color: #F0F0F0;  /* Light gray background */
         font-family: 'Arial', sans-serif;
     }
     .title {
         font-size: 36px;
-        color: #006400;  /* Dark green color */
+        color: #0D47A1;  /* Deep Blue color */
         text-align: center;
         padding: 20px 0;
     }
     .description {
         font-size: 18px;
-        color: #006400;  /* Dark green color */
+        color: #333333;  /* Dark Charcoal color */
         text-align: center;
         padding-bottom: 20px;
     }
@@ -27,23 +27,23 @@ st.markdown("""
         margin: 10px 0;
     }
     .user-message {
-        background-color: #DCF8C6;
+        background-color: #D5F5E3;  /* Light Green background */
         text-align: right;
         margin-right: 10px;
     }
     .bot-message {
-        background-color: #EAEAEA;
+        background-color: #ECEFF1;  /* Light Grayish Blue background */
         text-align: left;
         margin-left: 10px;
     }
     .sample-questions {
         font-size: 18px;
-        color: #2F4F4F;  /* Dark slate gray color */
-        background-color: #CCFFCC;  /* Light green background */
+        color: #0D47A1;  /* Deep Blue color */
+        background-color: #E3F2FD;  /* Soft Blue background */
         padding: 15px;
         border-radius: 10px;
         margin-bottom: 20px;
-        font-style: italic;  /* Italic font style */
+        font-style: italic;
     }
     .input-box {
         padding: 15px;
@@ -58,7 +58,7 @@ st.markdown("""
 st.markdown("<div class='title'>💬 FBC Chatbot</div>", unsafe_allow_html=True)
 st.markdown("<div class='description'>I am here to help FBCs answer questions from franchise owners.</div>", unsafe_allow_html=True)
 
-# Display sample questions for users to try with a light green background, complementary font color, and italic font
+# Display sample questions for users to try with a light blue background, deep blue font, and italic font
 st.markdown("<div class='sample-questions'><strong>Sample Questions</strong><br>"
             "- What are the reporting requirements for franchises?<br>"
             "- Can a franchise deviate from the standard operating procedures?<br>"
