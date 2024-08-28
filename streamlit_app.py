@@ -10,7 +10,6 @@ def load_csv_data_from_s3(conn, file_key):
         st.write(f"Attempting to read CSV file '{file_key}' from S3...")
         file_content = conn.read(file_key, input_format="text")
         df = pd.read_csv(BytesIO(file_content.encode()))
-        st.write("Successfully loaded CSV data into DataFrame.")
         return df
     except Exception as e:
         st.error(f"An error occurred while loading the CSV file from S3: {e}")
@@ -20,12 +19,10 @@ def load_csv_data_from_s3(conn, file_key):
 # Function to load policy documents from S3
 def load_policy_documents(conn):
     try:
-        st.write("Attempting to read policy documents from S3...")
         documents = {
             "franchise": conn.read("fbc-hackathon-test/policy_doc_1.txt", input_format="text", ttl=600),
             "employee_conduct": conn.read("fbc-hackathon-test/policy_doc_2.txt", input_format="text", ttl=600)
         }
-        st.write("Successfully loaded policy documents.")
         return documents
     except Exception as e:
         st.error(f"An error occurred while loading the policy documents from S3: {e}")
@@ -65,9 +62,7 @@ def determine_context_and_response(prompt, policy_documents, csv_df):
 
 # Establish connection to S3
 try:
-    st.write("Establishing connection to S3...")
     conn = st.connection('s3', type=FilesConnection)
-    st.write("Successfully connected to S3.")
 except Exception as e:
     st.error(f"An error occurred while establishing connection to S3: {e}")
     st.write("Error details:", str(e))
