@@ -2,15 +2,15 @@ import streamlit as st
 import pandas as pd
 from openai import OpenAI
 from st_files_connection import FilesConnection
+from io import BytesIO
 
 # Function to load the Excel data from S3 into a Pandas DataFrame
 def load_excel_data_from_s3(conn):
     try:
-        # Read the binary content from S3
+        # Read the binary content from S3 without specifying input_format
         file_content = conn.read("fbc-hackathon-test/Test_sheet.xlsx")
-
+        
         # Convert the binary content into a BytesIO object
-        from io import BytesIO
         file_bytes = BytesIO(file_content)
 
         # Load the Excel file into a Pandas DataFrame
