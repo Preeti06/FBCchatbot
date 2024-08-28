@@ -1,21 +1,18 @@
 import streamlit as st
 import os
 import pandas as pd
-import requests
 from openai import OpenAI
 from st_files_connection import FilesConnection
 
-# Function to load the Excel data into a Pandas DataFrame
-def load_excel_data():
-    file_path = "data.xlsx"
-    if os.path.exists(file_path):
-        try:
-            df = pd.read_excel(file_path, engine='openpyxl')
-            return df
-        except Exception as e:
-            st.error(f"An error occurred while reading the Excel file: {e}")
-    else:
-        st.error("Excel file not found.")
+# Function to load the Excel data from S3 into a Pandas DataFrame
+def load_excel_data_from_s3(conn):
+    try:
+        # Adjust the file path and bucket name as per your S3 structure
+        file_content = conn.read("fbc-hackathon-test/Test_sheet.xlsx", input_format="binary")
+        df = pd.read_excel(file_content, engine='openpyxl')
+        return df
+    except Exception as e:
+        st.error(f"An error occurred while loading the Excel file from S3: {e}")
     return None
 
 # Function to load policy documents from S3
@@ -50,9 +47,12 @@ def determine_context_and_response(prompt, policy_documents, df):
 
     return context
 
-# Download and load the Excel data
-download_excel_from_github()
-df = load_excel_data()
+# Establish connection to S3
+conn = st.connection('s3', type=FilesConnection)
+
+# Load the policy documents and Excel data from S3
+policy_documents = load_policy_documents(conn)
+df = load_excel_data_from_s3(conn)
 
 if df is not None:
     # Ensure the "SOCs Growth" column is numeric
@@ -81,9 +81,6 @@ st.markdown("""
         - "Can you identify any sales trends?"
     </p>
 """, unsafe_allow_html=True)
-
-conn = st.connection('s3', type=FilesConnection)
-policy_documents = load_policy_documents(conn)
 
 # Ask user for their OpenAI API key via `st.text_input`.
 openai_api_key = st.text_input("OpenAI API Key", type="password")
