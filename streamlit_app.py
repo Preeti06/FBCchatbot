@@ -38,13 +38,12 @@ def determine_context_and_response(prompt, policy_documents, csv_df):
         st.write("Determining the context based on the user's prompt...")
         prompt_lower = prompt.lower()
 
-        if "csv" in prompt_lower:  # Example condition for CSV-related queries
+        if any(keyword in prompt_lower for keyword in ["csv", "data", "franchise", "trends", "performance", "sales"]):
             if csv_df is not None:
-                context = f"Here is the data from the CSV file:\n{csv_df.to_string(index=False)}"
+                context = f"Here are two rows of data from the CSV file:\n{csv_df.head(2).to_string(index=False)}"
             else:
                 context = "CSV data is not available."
-        else:
-            # If the question is about policy, search in the policy documents
+        elif any(keyword in prompt_lower for keyword in ["policy", "franchise policy", "employee", "conduct"]):
             context = ""
             if "franchise" in prompt_lower:
                 context = policy_documents["franchise"]
@@ -54,6 +53,8 @@ def determine_context_and_response(prompt, policy_documents, csv_df):
             # If context is empty, return "Answer not found"
             if not context.strip():
                 context = "Answer not found."
+        else:
+            context = "The query does not match any known categories. Please specify if you're asking about CSV data or policies."
 
         st.write("Context determined successfully.")
         return context
@@ -128,13 +129,17 @@ else:
         ]
 
         # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            stream=True,
-        )
+        try:
+            stream = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                stream=True,
+            )
 
-        # Stream the response to the chat and store it in session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            # Stream the response to the chat and store it in session state.
+            with st.chat_message("assistant"):
+                response = st.write_stream(stream)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+
+        except openai.error.OpenAIError as e:
+            st.error(f"OpenAI API request failed: {e}")
