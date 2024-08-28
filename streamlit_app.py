@@ -7,53 +7,77 @@ from io import BytesIO
 # Function to load the Excel data from S3 into a Pandas DataFrame
 def load_excel_data_from_s3(conn):
     try:
+        st.write("Attempting to read Excel file from S3...")
         # Read the file content from S3 (this is binary data)
         file_content = conn.read("fbc-hackathon-test/Test_sheet.xlsx")
-        
+        st.write("Successfully read the file content from S3.")
+
         # Convert the binary content into a BytesIO object
         file_bytes = BytesIO(file_content)
 
         # Load the Excel file into a Pandas DataFrame
         df = pd.read_excel(file_bytes, engine='openpyxl')
+        st.write("Successfully loaded Excel data into DataFrame.")
         return df
     except Exception as e:
         st.error(f"An error occurred while loading the Excel file from S3: {e}")
+        st.write("Error details:", str(e))
     return None
 
 # Function to load policy documents from S3
 def load_policy_documents(conn):
-    documents = {
-        "franchise": conn.read("fbc-hackathon-test/policy_doc_1.txt", input_format="text", ttl=600),
-        "employee_conduct": conn.read("fbc-hackathon-test/policy_doc_2.txt", input_format="text", ttl=600)
-    }
-    return documents
+    try:
+        st.write("Attempting to read policy documents from S3...")
+        documents = {
+            "franchise": conn.read("fbc-hackathon-test/policy_doc_1.txt", input_format="text", ttl=600),
+            "employee_conduct": conn.read("fbc-hackathon-test/policy_doc_2.txt", input_format="text", ttl=600)
+        }
+        st.write("Successfully loaded policy documents.")
+        return documents
+    except Exception as e:
+        st.error(f"An error occurred while loading the policy documents from S3: {e}")
+        st.write("Error details:", str(e))
+    return None
 
 # Function to determine whether to use policy documents or Excel data
 def determine_context_and_response(prompt, policy_documents, df):
-    prompt_lower = prompt.lower()
+    try:
+        st.write("Determining the context based on the user's prompt...")
+        prompt_lower = prompt.lower()
 
-    if "soc" in prompt_lower or "growth" in prompt_lower:
-        # If the question is about SOCs Growth, use the Excel data
-        if df is not None:
-            context = f"The following franchises have issues with their SOCs Growth:\n{socs_growth_issues}"
+        if "soc" in prompt_lower or "growth" in prompt_lower:
+            # If the question is about SOCs Growth, use the Excel data
+            if df is not None:
+                context = f"The following franchises have issues with their SOCs Growth:\n{socs_growth_issues}"
+            else:
+                context = "SOCs Growth data is not available."
         else:
-            context = "SOCs Growth data is not available."
-    else:
-        # If the question is about policy, search in the policy documents
-        context = ""
-        if "franchise" in prompt_lower:
-            context = policy_documents["franchise"]
-        elif "employee" in prompt_lower or "conduct" in prompt_lower:
-            context = policy_documents["employee_conduct"]
+            # If the question is about policy, search in the policy documents
+            context = ""
+            if "franchise" in prompt_lower:
+                context = policy_documents["franchise"]
+            elif "employee" in prompt_lower or "conduct" in prompt_lower:
+                context = policy_documents["employee_conduct"]
 
-        # If context is empty, return "Answer not found"
-        if not context.strip():
-            context = "Answer not found."
+            # If context is empty, return "Answer not found"
+            if not context.strip():
+                context = "Answer not found."
 
-    return context
+        st.write("Context determined successfully.")
+        return context
+    except Exception as e:
+        st.error(f"An error occurred while determining the context: {e}")
+        st.write("Error details:", str(e))
+        return "An error occurred while determining the context."
 
 # Establish connection to S3
-conn = st.connection('s3', type=FilesConnection)
+try:
+    st.write("Establishing connection to S3...")
+    conn = st.connection('s3', type=FilesConnection)
+    st.write("Successfully connected to S3.")
+except Exception as e:
+    st.error(f"An error occurred while establishing connection to S3: {e}")
+    st.write("Error details:", str(e))
 
 # Load the policy documents and Excel data from S3
 policy_documents = load_policy_documents(conn)
@@ -62,6 +86,7 @@ df = load_excel_data_from_s3(conn)
 if df is not None:
     # Ensure the "SOCs Growth" column is numeric
     try:
+        st.write("Ensuring the 'SOCs Growth' column is numeric...")
         df["SOCs Growth"] = pd.to_numeric(df["SOCs Growth"], errors='coerce')
         
         # Filter the data to find franchises with low or negative SOCs Growth
@@ -69,10 +94,13 @@ if df is not None:
         
         # Prepare the context to be passed to the chatbot
         socs_growth_issues = franchises_needing_help.to_string(index=False)
-    except KeyError:
+        st.write("SOCs Growth data processed successfully.")
+    except KeyError as e:
         st.error("The 'SOCs Growth' column is not found in the data.")
+        st.write("Error details:", str(e))
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
+        st.write("Error details:", str(e))
 
 # Show title and description.
 st.title("FBC Chatbot - Here to Help")
