@@ -1,16 +1,21 @@
 import streamlit as st
 import pandas as pd
+import boto3
+from io import BytesIO
 from openai import OpenAI
 from st_files_connection import FilesConnection
-from io import BytesIO
 
-# Function to load the Excel data from S3 into a Pandas DataFrame
-def load_excel_data_from_s3(conn):
+# Function to load the Excel data from S3 using boto3 into a Pandas DataFrame
+def load_excel_data_from_s3(bucket_name, file_key):
     try:
-        st.write("Attempting to read Excel file from S3...")
+        st.write("Attempting to read Excel file from S3 using boto3...")
+
+        # Initialize a session using boto3
+        s3 = boto3.client('s3')
+
         # Read the file content from S3 (this is binary data)
-        file_content = conn.read("fbc-hackathon-test/Test_sheet.xlsx")
-        st.write("Successfully read the file content from S3.")
+        response = s3.get_object(Bucket=bucket_name, Key=file_key)
+        file_content = response['Body'].read()
 
         # Convert the binary content into a BytesIO object
         file_bytes = BytesIO(file_content)
@@ -70,18 +75,22 @@ def determine_context_and_response(prompt, policy_documents, df):
         st.write("Error details:", str(e))
         return "An error occurred while determining the context."
 
-# Establish connection to S3
+# Establish connection to S3 for policy documents
 try:
-    st.write("Establishing connection to S3...")
+    st.write("Establishing connection to S3 for policy documents...")
     conn = st.connection('s3', type=FilesConnection)
-    st.write("Successfully connected to S3.")
+    st.write("Successfully connected to S3 for policy documents.")
 except Exception as e:
     st.error(f"An error occurred while establishing connection to S3: {e}")
     st.write("Error details:", str(e))
 
-# Load the policy documents and Excel data from S3
+# Load the policy documents from S3 using st_files_connection
 policy_documents = load_policy_documents(conn)
-df = load_excel_data_from_s3(conn)
+
+# Load the Excel data from S3 using boto3
+bucket_name = "your-bucket-name"  # Replace with your S3 bucket name
+file_key = "fbc-hackathon-test/Test_sheet.xlsx"  # Replace with your S3 file key
+df = load_excel_data_from_s3(bucket_name, file_key)
 
 if df is not None:
     # Ensure the "SOCs Growth" column is numeric
