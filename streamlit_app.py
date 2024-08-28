@@ -73,7 +73,7 @@ except Exception as e:
 
 # Load the policy documents and CSV data from S3
 policy_documents = load_policy_documents(conn)
-csv_df = load_csv_data_from_s3(conn, "fbc-hackathon-test/sample_data.csv")  # Replace with your CSV file key
+csv_df = load_csv_data_from_s3(conn, "fbc-hackathon-test/Test_sheet.csv")  # Replace with your CSV file key
 
 # Show title and description.
 st.title("FBC Chatbot - Here to Help")
