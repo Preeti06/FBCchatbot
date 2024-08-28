@@ -5,19 +5,6 @@ import requests
 from openai import OpenAI
 from st_files_connection import FilesConnection
 
-# Function to download the Excel file from GitHub
-def download_excel_from_github():
-    url = "https://raw.githubusercontent.com/Preeti06/FBCchatbot/main/Test_sheet.xlsx"
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open("data.xlsx", "wb") as file:
-                file.write(response.content)
-        else:
-            st.error(f"Failed to download the Excel file. Status code: {response.status_code}")
-    except Exception as e:
-        st.error(f"An error occurred while downloading the Excel file: {e}")
-
 # Function to load the Excel data into a Pandas DataFrame
 def load_excel_data():
     file_path = "data.xlsx"
@@ -30,6 +17,38 @@ def load_excel_data():
     else:
         st.error("Excel file not found.")
     return None
+
+# Function to load policy documents from S3
+def load_policy_documents(conn):
+    documents = {
+        "franchise": conn.read("fbc-hackathon-test/policy_doc_1.txt", input_format="text", ttl=600),
+        "employee_conduct": conn.read("fbc-hackathon-test/policy_doc_2.txt", input_format="text", ttl=600)
+    }
+    return documents
+
+# Function to determine whether to use policy documents or Excel data
+def determine_context_and_response(prompt, policy_documents, df):
+    prompt_lower = prompt.lower()
+
+    if "soc" in prompt_lower or "growth" in prompt_lower:
+        # If the question is about SOCs Growth, use the Excel data
+        if df is not None:
+            context = f"The following franchises have issues with their SOCs Growth:\n{socs_growth_issues}"
+        else:
+            context = "SOCs Growth data is not available."
+    else:
+        # If the question is about policy, search in the policy documents
+        context = ""
+        if "franchise" in prompt_lower:
+            context = policy_documents["franchise"]
+        elif "employee" in prompt_lower or "conduct" in prompt_lower:
+            context = policy_documents["employee_conduct"]
+
+        # If context is empty, return "Answer not found"
+        if not context.strip():
+            context = "Answer not found."
+
+    return context
 
 # Download and load the Excel data
 download_excel_from_github()
@@ -63,6 +82,9 @@ st.markdown("""
     </p>
 """, unsafe_allow_html=True)
 
+conn = st.connection('s3', type=FilesConnection)
+policy_documents = load_policy_documents(conn)
+
 # Ask user for their OpenAI API key via `st.text_input`.
 openai_api_key = st.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
@@ -80,7 +102,7 @@ else:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Create a chat input field.
+    # Handle the user prompt and generate a response
     if prompt := st.chat_input("Ask a question:"):
 
         # Store and display the current prompt.
@@ -88,13 +110,14 @@ else:
         with st.chat_message("user"):
             st.markdown(prompt)
 
+        # Determine context based on the user's prompt
+        context = determine_context_and_response(prompt, policy_documents, df)
+
         # Combine the context with the user's prompt for the OpenAI API.
         system_message = (
-            "You are a helpful assistant with access to the following business data. "
+            "You are a helpful assistant with access to the following policy documents and business data. "
             "Use the content to answer questions accurately."
         )
-        
-        context = f"The following franchises have issues with their SOCs Growth:\n{socs_growth_issues}"
 
         messages = [
             {"role": "system", "content": system_message},
