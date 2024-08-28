@@ -1,8 +1,8 @@
 import streamlit as st
-from openai import OpenAI
 import os
 import pandas as pd
 import requests
+from openai import OpenAI
 from st_files_connection import FilesConnection
 
 # Function to download the Excel file from GitHub
@@ -35,13 +35,20 @@ def load_excel_data():
 download_excel_from_github()
 df = load_excel_data()
 
-# Assuming your Excel sheet has columns like "Franchise Number" and "SOCs Growth"
 if df is not None:
-    # Filter the data to find franchises with low or negative SOCs Growth
-    franchises_needing_help = df[df["SOCs Growth"] <= 0]  # Modify this condition based on your criteria
-    
-    # Prepare the context to be passed to the chatbot
-    socs_growth_issues = franchises_needing_help.to_string(index=False)
+    # Ensure the "SOCs Growth" column is numeric
+    try:
+        df["SOCs Growth"] = pd.to_numeric(df["SOCs Growth"], errors='coerce')
+        
+        # Filter the data to find franchises with low or negative SOCs Growth
+        franchises_needing_help = df[df["SOCs Growth"] <= 0]
+        
+        # Prepare the context to be passed to the chatbot
+        socs_growth_issues = franchises_needing_help.to_string(index=False)
+    except KeyError:
+        st.error("The 'SOCs Growth' column is not found in the data.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
 
 # Show title and description.
 st.title("FBC Chatbot - Here to Help")
@@ -81,14 +88,14 @@ else:
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Prepare the context for the chatbot by including relevant policy document text.
-        context = f"The following franchises have issues with their SOCs Growth:\n{socs_growth_issues}"
-
         # Combine the context with the user's prompt for the OpenAI API.
         system_message = (
             "You are a helpful assistant with access to the following business data. "
             "Use the content to answer questions accurately."
         )
+        
+        context = f"The following franchises have issues with their SOCs Growth:\n{socs_growth_issues}"
+
         messages = [
             {"role": "system", "content": system_message},
             {"role": "user", "content": f"{context}\n\n{prompt}"},
