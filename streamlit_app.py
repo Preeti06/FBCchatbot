@@ -7,7 +7,6 @@ from st_files_connection import FilesConnection
 # Function to load CSV data from S3 into a Pandas DataFrame
 def load_csv_data_from_s3(conn, file_key):
     try:
-        st.write(f"Attempting to read CSV file '{file_key}' from S3...")
         file_content = conn.read(file_key, input_format="text")
         df = pd.read_csv(BytesIO(file_content.encode()))
         return df
