@@ -7,7 +7,7 @@ from io import BytesIO
 # Function to load the Excel data from S3 into a Pandas DataFrame
 def load_excel_data_from_s3(conn):
     try:
-        # Read the binary content from S3 without specifying input_format
+        # Read the file content from S3 (this is binary data)
         file_content = conn.read("fbc-hackathon-test/Test_sheet.xlsx")
         
         # Convert the binary content into a BytesIO object
