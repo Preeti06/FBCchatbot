@@ -9,8 +9,12 @@ def load_excel_data_from_s3(conn):
         # Read the binary content from S3
         file_content = conn.read("fbc-hackathon-test/Test_sheet.xlsx")
 
+        # Convert the binary content into a BytesIO object
+        from io import BytesIO
+        file_bytes = BytesIO(file_content)
+
         # Load the Excel file into a Pandas DataFrame
-        df = pd.read_excel(file_content, engine='openpyxl')
+        df = pd.read_excel(file_bytes, engine='openpyxl')
         return df
     except Exception as e:
         st.error(f"An error occurred while loading the Excel file from S3: {e}")
