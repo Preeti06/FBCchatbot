@@ -21,8 +21,12 @@ def load_csv_data_from_s3(conn, file_key, filter_columns=None):
         # Read the CSV content from S3
         file_content = conn.read(file_key)
         
-        # Assume the content is a string and read it into a DataFrame
-        df = pd.read_csv(StringIO(file_content))
+        # Check if the content is already a DataFrame
+        if isinstance(file_content, pd.DataFrame):
+            df = file_content
+        else:
+            # Otherwise, assume it's a string and read it into a DataFrame
+            df = pd.read_csv(StringIO(file_content))
         
         # Filter to specific columns if required
         if filter_columns:
