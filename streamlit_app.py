@@ -18,7 +18,7 @@ KEY_COLUMNS = [
 # Function to load CSV data from S3 into a Pandas DataFrame
 def load_csv_data_from_s3(conn, file_key):
     try:
-        file_content = conn.read(file_key, input_format="text")
+        file_content = conn.read(file_key)
         df = pd.read_csv(BytesIO(file_content.encode()))
 
         # If loading Operations_ScoreCard, filter to key columns
@@ -35,9 +35,9 @@ def load_csv_data_from_s3(conn, file_key):
 def load_pdf_data_from_s3(conn, file_key):
     try:
         # Read the binary content of the file
-        file_content = conn.read(file_key, input_format="binary")
+        file_content = conn.read(file_key)
         
-        # Load the PDF file using PyMuPDF
+        # Convert the content to a binary stream
         pdf_document = fitz.open(stream=BytesIO(file_content), filetype="pdf")
         
         # Extract text from each page of the PDF
