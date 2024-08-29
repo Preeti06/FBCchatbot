@@ -29,9 +29,6 @@ def load_csv_data_from_s3(conn, file_key, filter_columns=None):
             # Otherwise, assume it's a string and read it into a DataFrame
             df = pd.read_csv(StringIO(file_content))
         
-        # Show the initial columns for debugging
-        st.write(f"Initial columns in {file_key}: {df.columns.tolist()}")
-        
         # Filter to specific columns if required
         if filter_columns:
             df = df[filter_columns]
@@ -96,7 +93,6 @@ def load_data(conn, files_needed):
         if file_type == "csv":
             df = load_csv_data_from_s3(conn, file_key, optional[0] if optional else None)
             if df is not None:
-                st.write(f"Columns in {file_key} after filtering: {df.columns.tolist()}")
                 if franchise_number:
                     if 'Number' in df.columns:
                         # Filter the DataFrame for the specific franchise number
