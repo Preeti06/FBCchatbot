@@ -87,12 +87,14 @@ def determine_files_needed(prompt):
 # Function to load the required data from the relevant files
 def load_data(conn, files_needed):
     context = ""
+    files_considered = []
 
     for file_type, file_key, *optional in files_needed:
         franchise_number = optional[1] if len(optional) > 1 else None
         if file_type == "csv":
             df = load_csv_data_from_s3(conn, file_key, optional[0] if optional else None)
             if df is not None:
+                files_considered.append(file_key)
                 if franchise_number:
                     if 'Number' in df.columns:
                         # Filter the DataFrame for the specific franchise number
@@ -103,20 +105,24 @@ def load_data(conn, files_needed):
         elif file_type == "text":
             text_content = load_text_data_from_s3(conn, file_key)
             if text_content:
+                files_considered.append(file_key)
                 context += f"\nContent from {file_key}:\n{text_content[:1000]}\n"  # Limiting text content to first 1000 characters
 
-    return context
+    return context, files_considered
 
 # Function to generate response from OpenAI based on the context and prompt
-def generate_response(client, context, prompt):
+def generate_response(client, context, prompt, files_considered):
     system_message = (
         "You are a helpful assistant with access to the following documents and business data. "
         "Use the content to answer questions accurately."
     )
 
+    files_considered_str = "\n".join(files_considered)
+    final_context = f"Files considered:\n{files_considered_str}\n\n{context}"
+
     messages = [
         {"role": "system", "content": system_message},
-        {"role": "user", "content": f"{context}\n\n{prompt}"},
+        {"role": "user", "content": f"{final_context}\n\n{prompt}"},
     ]
 
     try:
@@ -173,7 +179,7 @@ else:
         files_needed = determine_files_needed(prompt)
 
         # Load data from the required files
-        context = load_data(conn, files_needed)
+        context, files_considered = load_data(conn, files_needed)
 
         # Generate a response from OpenAI based on the context and prompt
-        generate_response(client, context, prompt)
+        generate_response(client, context, prompt, files_considered)
