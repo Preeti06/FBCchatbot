@@ -4,11 +4,23 @@ from io import BytesIO
 from openai import OpenAI
 from st_files_connection import FilesConnection
 
+# Key columns to focus on
+KEY_COLUMNS = [
+    'CurrentYearTotalRevenue', 'LastYearTotalRevenue',
+    'CurrentYearTotalBillableHours', 'LastYearTotalBillableHours',
+    'RPNLeadsGrowth', 'CPNetGrowth', 'SOCGrowth',
+    'HoursGrowth', 'RevenueGrowth', 'WeightedScore',
+    'Rank', 'RPNQuartile', 'CPNETQuartile', 'SOCQuartile',
+    'HOURSQuartile', 'REVQuartile'
+]
+
 # Function to load CSV data from S3 into a Pandas DataFrame
 def load_csv_data_from_s3(conn, file_key):
     try:
         file_content = conn.read(file_key, input_format="text")
         df = pd.read_csv(BytesIO(file_content.encode()))
+        # Filter the DataFrame to include only the key columns
+        df = df[KEY_COLUMNS]
         return df
     except Exception as e:
         st.error(f"An error occurred while loading the CSV file from S3: {e}")
@@ -36,7 +48,7 @@ def determine_context_and_response(prompt, policy_documents, csv_df):
 
         if any(keyword in prompt_lower for keyword in ["csv", "data", "franchise", "trends", "performance", "sales"]):
             if csv_df is not None:
-                context = f"Here are two rows of data from the CSV file:\n{csv_df.head(2).to_string(index=False)}"
+                context = f"Here are two rows of key data from the CSV file:\n{csv_df.head(2).to_string(index=False)}"
             else:
                 context = "CSV data is not available."
         elif any(keyword in prompt_lower for keyword in ["policy", "franchise policy", "employee", "conduct"]):
