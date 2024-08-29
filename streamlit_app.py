@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import docx
+import fitz  # PyMuPDF for handling PDFs
 from io import BytesIO
 from openai import OpenAI
 from st_files_connection import FilesConnection
@@ -31,26 +31,29 @@ def load_csv_data_from_s3(conn, file_key):
         st.write("Error details:", str(e))
     return None
 
-# Function to load DOCX documents from S3
-def load_docx_data_from_s3(conn, file_key):
+# Function to load PDF documents from S3
+def load_pdf_data_from_s3(conn, file_key):
     try:
         # Read the binary content of the file
         file_content = conn.read(file_key, input_format="binary")
         
-        # Load the DOCX file using python-docx
-        doc = docx.Document(BytesIO(file_content))
+        # Load the PDF file using PyMuPDF
+        pdf_document = fitz.open(stream=BytesIO(file_content), filetype="pdf")
         
-        # Extract text from the DOCX file
-        doc_text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+        # Extract text from each page of the PDF
+        pdf_text = ""
+        for page_num in range(len(pdf_document)):
+            page = pdf_document[page_num]
+            pdf_text += page.get_text()
         
-        return doc_text
+        return pdf_text
     except Exception as e:
-        st.error(f"An error occurred while loading the DOCX file from S3: {e}")
+        st.error(f"An error occurred while loading the PDF file from S3: {e}")
         st.write("Error details:", str(e))
     return None
 
-# Function to determine whether to use DOCX documents or CSV data
-def determine_context_and_response(prompt, csv_df, docx_content):
+# Function to determine whether to use PDF documents or CSV data
+def determine_context_and_response(prompt, csv_df, pdf_content):
     try:
         st.write("Determining the context based on the user's prompt...")
         prompt_lower = prompt.lower()
@@ -60,8 +63,8 @@ def determine_context_and_response(prompt, csv_df, docx_content):
                 context = f"Here is the data from the CSV file:\n{csv_df.to_string(index=False)}"
             else:
                 context = "CSV data is not available."
-        elif any(keyword in prompt_lower for keyword in ["doc", "document", "weekly metrics", "yext"]):
-            context = docx_content if docx_content else "Document content is not available."
+        elif any(keyword in prompt_lower for keyword in ["pdf", "document", "weekly metrics", "yext"]):
+            context = pdf_content if pdf_content else "Document content is not available."
 
         else:
             context = "The query does not match any known categories. Please specify if you're asking about CSV data or documents."
@@ -89,20 +92,20 @@ csv_file_options = {
     "Network Median": "fbc-hackathon-test/Network Median.csv"
 }
 
-# Option for user to select which DOCX file to load
-docx_file_options = {
-    "Weekly Metrics Meeting": "fbc-hackathon-test/Weekly Metrics Meeting.docx",
-    "Yext Document": "fbc-hackathon-test/Yext.docx",
-    "HCC Job template": "fbc-hackathon-test/Yext.docx"
+# Option for user to select which PDF file to load
+pdf_file_options = {
+    "Weekly Metrics Meeting": "fbc-hackathon-test/Weekly Metrics Meeting.pdf",
+    "Yext Document": "fbc-hackathon-test/Yext.pdf",
+    "HCC Job template": "fbc-hackathon-test/HCC Job template.pdf"
 }
 
 # User selects CSV file
 csv_file_selection = st.selectbox("Select a CSV file to load:", list(csv_file_options.keys()))
 csv_df = load_csv_data_from_s3(conn, csv_file_options[csv_file_selection])
 
-# User selects DOCX file
-docx_file_selection = st.selectbox("Select a DOCX file to load:", list(docx_file_options.keys()))
-docx_content = load_docx_data_from_s3(conn, docx_file_options[docx_file_selection])
+# User selects PDF file
+pdf_file_selection = st.selectbox("Select a PDF file to load:", list(pdf_file_options.keys()))
+pdf_content = load_pdf_data_from_s3(conn, pdf_file_options[pdf_file_selection])
 
 # Show title and description.
 st.title("FBC Chatbot - Here to Help")
@@ -145,7 +148,7 @@ else:
             st.markdown(prompt)
 
         # Determine context based on the user's prompt
-        context = determine_context_and_response(prompt, csv_df, docx_content)
+        context = determine_context_and_response(prompt, csv_df, pdf_content)
 
         # Combine the context with the user's prompt for the OpenAI API.
         system_message = (
@@ -173,4 +176,3 @@ else:
 
         except openai.error.OpenAIError as e:
             st.error(f"OpenAI API request failed: {e}")
-
