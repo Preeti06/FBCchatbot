@@ -98,8 +98,6 @@ def load_data(conn, files_needed):
                         # Filter the DataFrame for the specific franchise number
                         df = df[df['Number'] == int(franchise_number)]
                         context += f"\nData from {file_key}:\n{df.head().to_string(index=False)}\n"
-                    else:
-                        st.warning(f"Column 'Number' not found in {file_key}. Available columns: {df.columns.tolist()}")
                 else:
                     context += f"\nData from {file_key}:\n{df.head().to_string(index=False)}\n"
         elif file_type == "text":
