@@ -67,7 +67,7 @@ def determine_files_needed(prompt):
     
     if any(keyword in prompt_lower for keyword in ["revenue", "performance", "sales", "data", "franchise"]):
         files_needed.append(("csv", "fbc-hackathon-test/Operations_ScoreCard.csv", KEY_COLUMNS, franchise_number))
-    if any(keyword in prompt_lower for keyword in ["kpi", "consultant", "development"]):
+    if any(keyword in prompt_lower for keyword in ["kpi", "consultant", "development", "hcc"]):
         files_needed.append(("csv", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - KPIs.csv", None, franchise_number))
     if any(keyword in prompt_lower for keyword in ["balance", "sheet"]):
         files_needed.append(("csv", "fbc-hackathon-test/Balance Sheet Example - Sheet1.csv", None, franchise_number))
@@ -81,6 +81,12 @@ def determine_files_needed(prompt):
         files_needed.append(("text", "fbc-hackathon-test/Yext.txt"))
     if any(keyword in prompt_lower for keyword in ["job", "template", "hcc"]):
         files_needed.append(("text", "fbc-hackathon-test/HCC Job template.txt"))
+    if any(keyword in prompt_lower for keyword in ["learning", "plan", "phases", "hcc"]):
+        files_needed.append(("text", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - Learning Plan.csv"))
+    if any(keyword in prompt_lower for keyword in ["performance", "consultant", "hcc", "development"]):
+        files_needed.append(("text", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - INSTRUCTIONS.csv"))
+    if any(keyword in prompt_lower for keyword in ["accountabilities", "template", "hcc"]):
+        files_needed.append(("text", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - Accountabilities.csv"))
 
     return files_needed
 
