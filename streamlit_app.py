@@ -82,6 +82,9 @@ def determine_files_needed(prompt):
     if any(keyword in prompt_lower for keyword in ["job", "template", "hcc"]):
         files_needed.append(("text", "fbc-hackathon-test/HCC Job template.txt"))
 
+    # Debug: print the determined files
+    st.write("Files needed based on the prompt:", files_needed)
+
     return files_needed
 
 # Function to load the required data from the relevant files
@@ -94,7 +97,7 @@ def load_data(conn, files_needed):
         if file_type == "csv":
             df = load_csv_data_from_s3(conn, file_key, optional[0] if optional else None)
             if df is not None:
-                files_considered.append(file_key)
+                files_considered.append(file_key)  # Track the file here
                 if franchise_number:
                     if 'Number' in df.columns:
                         # Filter the DataFrame for the specific franchise number
@@ -105,8 +108,12 @@ def load_data(conn, files_needed):
         elif file_type == "text":
             text_content = load_text_data_from_s3(conn, file_key)
             if text_content:
-                files_considered.append(file_key)
-                context += f"\nContent from {file_key}:\n{text_content[:1000]}\n"  # Limiting text content to first 1000 characters
+                files_considered.append(file_key)  # Track the file here
+                context += f"\nContent from {file_key}:\n{text_content[:1000]}\n"
+
+    # Debug: print the files considered and the context generated
+    st.write("Files considered:", files_considered)
+    st.write("Generated context:", context)
 
     return context, files_considered
 
@@ -119,6 +126,9 @@ def generate_response(client, context, prompt, files_considered):
 
     files_considered_str = "\n".join(files_considered)
     final_context = f"{context}\n\nFiles considered for this response:\n{files_considered_str}"
+
+    # Debug: print the final context before sending it to OpenAI
+    st.write("Final context sent to OpenAI:", final_context)
 
     messages = [
         {"role": "system", "content": system_message},
@@ -136,6 +146,9 @@ def generate_response(client, context, prompt, files_considered):
         with st.chat_message("assistant"):
             response = st.write_stream(stream)
         st.session_state.messages.append({"role": "assistant", "content": f"{response}\n\nFiles considered: {files_considered_str}"})
+
+        # Debug: print the response from OpenAI
+        st.write("Response from OpenAI:", response)
 
     except openai.error.OpenAIError as e:
         st.error(f"OpenAI API request failed: {e}")
