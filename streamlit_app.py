@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import re
 from io import StringIO
 from openai import OpenAI
 from st_files_connection import FilesConnection
@@ -44,23 +45,31 @@ def load_text_data_from_s3(conn, file_key):
         st.write("Error details:", str(e))
     return None
 
+# Function to extract the franchise identifier from the user's prompt
+def extract_franchise_identifier(prompt):
+    # Assuming the franchise name or ID follows the word "Franchise" in the query
+    match = re.search(r"Franchise\s+(\w+)", prompt, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return None
+
 # Function to determine which files are needed based on the user's query
 def determine_files_needed(prompt):
     prompt_lower = prompt.lower()
-    
     files_needed = []
-
-    # Add logic to determine which files to load based on keywords in the prompt
+    
+    franchise_id = extract_franchise_identifier(prompt)
+    
     if any(keyword in prompt_lower for keyword in ["revenue", "performance", "sales", "data", "franchise"]):
-        files_needed.append(("csv", "fbc-hackathon-test/Operations_ScoreCard.csv", KEY_COLUMNS))
+        files_needed.append(("csv", "fbc-hackathon-test/Operations_ScoreCard.csv", KEY_COLUMNS, franchise_id))
     if any(keyword in prompt_lower for keyword in ["kpi", "consultant", "development"]):
-        files_needed.append(("csv", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - KPIs.csv", None))
+        files_needed.append(("csv", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - KPIs.csv", None, franchise_id))
     if any(keyword in prompt_lower for keyword in ["balance", "sheet"]):
-        files_needed.append(("csv", "fbc-hackathon-test/Balance Sheet Example - Sheet1.csv", None))
+        files_needed.append(("csv", "fbc-hackathon-test/Balance Sheet Example - Sheet1.csv", None, franchise_id))
     if any(keyword in prompt_lower for keyword in ["income", "statement"]):
-        files_needed.append(("csv", "fbc-hackathon-test/Basic Income Statement Example - Sheet1.csv", None))
+        files_needed.append(("csv", "fbc-hackathon-test/Basic Income Statement Example - Sheet1.csv", None, franchise_id))
     if any(keyword in prompt_lower for keyword in ["median", "network"]):
-        files_needed.append(("csv", "fbc-hackathon-test/Network Median.csv", None))
+        files_needed.append(("csv", "fbc-hackathon-test/Network Median.csv", None, franchise_id))
     if any(keyword in prompt_lower for keyword in ["weekly", "metrics", "meeting"]):
         files_needed.append(("text", "fbc-hackathon-test/Weekly Metrics Meeting.txt"))
     if any(keyword in prompt_lower for keyword in ["yext"]):
@@ -74,11 +83,14 @@ def determine_files_needed(prompt):
 def load_data(conn, files_needed):
     context = ""
 
-    for file_type, file_key, *filter_columns in files_needed:
+    for file_type, file_key, *optional in files_needed:
+        franchise_id = optional[1] if len(optional) > 1 else None
         if file_type == "csv":
-            df = load_csv_data_from_s3(conn, file_key, filter_columns[0] if filter_columns else None)
-            if df is not None:
-                context += f"\nData from {file_key}:\n{df.head().to_string(index=False)}\n"
+            df = load_csv_data_from_s3(conn, file_key, optional[0] if optional else None)
+            if df is not None and franchise_id:
+                # Filter the DataFrame for the specific franchise
+                df = df[df['FranchiseID'] == franchise_id]
+                context += f"\nData from {file_key} for Franchise {franchise_id}:\n{df.head().to_string(index=False)}\n"
         elif file_type == "text":
             text_content = load_text_data_from_s3(conn, file_key)
             if text_content:
