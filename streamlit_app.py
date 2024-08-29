@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import docx
 from io import BytesIO
 from openai import OpenAI
 from st_files_connection import FilesConnection
@@ -33,8 +34,16 @@ def load_csv_data_from_s3(conn, file_key):
 # Function to load DOCX documents from S3
 def load_docx_data_from_s3(conn, file_key):
     try:
-        doc_content = conn.read(file_key, input_format="text")
-        return doc_content
+        # Read the binary content of the file
+        file_content = conn.read(file_key, input_format="binary")
+        
+        # Load the DOCX file using python-docx
+        doc = docx.Document(BytesIO(file_content))
+        
+        # Extract text from the DOCX file
+        doc_text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+        
+        return doc_text
     except Exception as e:
         st.error(f"An error occurred while loading the DOCX file from S3: {e}")
         st.write("Error details:", str(e))
