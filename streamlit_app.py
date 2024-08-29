@@ -118,7 +118,7 @@ def generate_response(client, context, prompt, files_considered):
     )
 
     files_considered_str = "\n".join(files_considered)
-    final_context = f"Files considered:\n{files_considered_str}\n\n{context}"
+    final_context = f"{context}\n\nFiles considered for this response:\n{files_considered_str}"
 
     messages = [
         {"role": "system", "content": system_message},
@@ -135,7 +135,7 @@ def generate_response(client, context, prompt, files_considered):
         # Stream the response to the chat and store it in session state.
         with st.chat_message("assistant"):
             response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": f"{response}\n\nFiles considered: {files_considered_str}"})
 
     except openai.error.OpenAIError as e:
         st.error(f"OpenAI API request failed: {e}")
