@@ -5,8 +5,9 @@ from io import StringIO
 from openai import OpenAI
 from st_files_connection import FilesConnection
 
-# Key columns to focus on for Operations_ScoreCard
+# Key columns to focus on for Operations_ScoreCard, ensure 'Number' is included
 KEY_COLUMNS = [
+    'Number',  # Ensure this column is not filtered out
     'CurrentYearTotalRevenue', 'LastYearTotalRevenue',
     'CurrentYearTotalBillableHours', 'LastYearTotalBillableHours',
     'RPNLeadsGrowth', 'CPNetGrowth', 'SOCGrowth',
@@ -27,6 +28,9 @@ def load_csv_data_from_s3(conn, file_key, filter_columns=None):
         else:
             # Otherwise, assume it's a string and read it into a DataFrame
             df = pd.read_csv(StringIO(file_content))
+        
+        # Show the initial columns for debugging
+        st.write(f"Initial columns in {file_key}: {df.columns.tolist()}")
         
         # Filter to specific columns if required
         if filter_columns:
@@ -92,6 +96,7 @@ def load_data(conn, files_needed):
         if file_type == "csv":
             df = load_csv_data_from_s3(conn, file_key, optional[0] if optional else None)
             if df is not None:
+                st.write(f"Columns in {file_key} after filtering: {df.columns.tolist()}")
                 if franchise_number:
                     if 'Number' in df.columns:
                         # Filter the DataFrame for the specific franchise number
