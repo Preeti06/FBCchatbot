@@ -48,7 +48,7 @@ def determine_context_and_response(prompt, policy_documents, csv_df):
 
         if any(keyword in prompt_lower for keyword in ["csv", "data", "franchise", "trends", "performance", "sales"]):
             if csv_df is not None:
-                context = f"Here are two rows of key data from the CSV file:\n{csv_df.head(2).to_string(index=False)}"
+                context = f"Here are two rows of key data from the CSV file:\n{csv_df.head(5).to_string(index=False)}"
             else:
                 context = "CSV data is not available."
         elif any(keyword in prompt_lower for keyword in ["policy", "franchise policy", "employee", "conduct"]):
