@@ -82,11 +82,11 @@ def determine_files_needed(prompt):
     if any(keyword in prompt_lower for keyword in ["job", "template", "hcc"]):
         files_needed.append(("text", "fbc-hackathon-test/HCC Job template.txt"))
     if any(keyword in prompt_lower for keyword in ["learning", "plan", "phases", "hcc"]):
-        files_needed.append(("text", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - Learning Plan.csv"))
+        files_needed.append(("csv", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - Learning Plan.csv"))
     if any(keyword in prompt_lower for keyword in ["performance", "consultant", "hcc", "development"]):
-        files_needed.append(("text", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - INSTRUCTIONS.csv"))
+        files_needed.append(("csv", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - INSTRUCTIONS.csv"))
     if any(keyword in prompt_lower for keyword in ["accountabilities", "template", "hcc"]):
-        files_needed.append(("text", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - Accountabilities.csv"))
+        files_needed.append(("csv", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - Accountabilities.csv"))
 
     return files_needed
 
