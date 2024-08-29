@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from io import BytesIO
+from io import StringIO
 from openai import OpenAI
 from st_files_connection import FilesConnection
 
@@ -20,8 +20,8 @@ def load_csv_data_from_s3(conn, file_key):
         # Read the CSV content as a string
         file_content = conn.read(file_key)
         
-        # Load the string content into a Pandas DataFrame
-        df = pd.read_csv(BytesIO(file_content.encode()))
+        # Load the string content into a Pandas DataFrame using StringIO
+        df = pd.read_csv(StringIO(file_content))
 
         # If loading Operations_ScoreCard, filter to key columns
         if file_key == "fbc-hackathon-test/Operations_ScoreCard.csv":
