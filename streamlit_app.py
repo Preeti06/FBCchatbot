@@ -4,7 +4,7 @@ from io import BytesIO
 from openai import OpenAI
 from st_files_connection import FilesConnection
 
-# Key columns to focus on
+# Key columns to focus on for Operations_ScoreCard
 KEY_COLUMNS = [
     'CurrentYearTotalRevenue', 'LastYearTotalRevenue',
     'CurrentYearTotalBillableHours', 'LastYearTotalBillableHours',
@@ -19,50 +19,43 @@ def load_csv_data_from_s3(conn, file_key):
     try:
         file_content = conn.read(file_key, input_format="text")
         df = pd.read_csv(BytesIO(file_content.encode()))
-        # Filter the DataFrame to include only the key columns
-        df = df[KEY_COLUMNS]
+
+        # If loading Operations_ScoreCard, filter to key columns
+        if file_key == "fbc-hackathon-test/Operations_ScoreCard.csv":
+            df = df[KEY_COLUMNS]
+        
         return df
     except Exception as e:
         st.error(f"An error occurred while loading the CSV file from S3: {e}")
         st.write("Error details:", str(e))
     return None
 
-# Function to load policy documents from S3
-def load_policy_documents(conn):
+# Function to load DOCX documents from S3
+def load_docx_data_from_s3(conn, file_key):
     try:
-        documents = {
-            "franchise": conn.read("fbc-hackathon-test/policy_doc_1.txt", input_format="text", ttl=600),
-            "employee_conduct": conn.read("fbc-hackathon-test/policy_doc_2.txt", input_format="text", ttl=600)
-        }
-        return documents
+        doc_content = conn.read(file_key, input_format="text")
+        return doc_content
     except Exception as e:
-        st.error(f"An error occurred while loading the policy documents from S3: {e}")
+        st.error(f"An error occurred while loading the DOCX file from S3: {e}")
         st.write("Error details:", str(e))
     return None
 
-# Function to determine whether to use policy documents or CSV data
-def determine_context_and_response(prompt, policy_documents, csv_df):
+# Function to determine whether to use DOCX documents or CSV data
+def determine_context_and_response(prompt, csv_df, docx_content):
     try:
         st.write("Determining the context based on the user's prompt...")
         prompt_lower = prompt.lower()
 
         if any(keyword in prompt_lower for keyword in ["csv", "data", "franchise", "trends", "performance", "sales"]):
             if csv_df is not None:
-                context = f"Here are two rows of key data from the CSV file:\n{csv_df.head(5).to_string(index=False)}"
+                context = f"Here is the data from the CSV file:\n{csv_df.to_string(index=False)}"
             else:
                 context = "CSV data is not available."
-        elif any(keyword in prompt_lower for keyword in ["policy", "franchise policy", "employee", "conduct"]):
-            context = ""
-            if "franchise" in prompt_lower:
-                context = policy_documents["franchise"]
-            elif "employee" in prompt_lower or "conduct" in prompt_lower:
-                context = policy_documents["employee_conduct"]
+        elif any(keyword in prompt_lower for keyword in ["doc", "document", "weekly metrics", "yext"]):
+            context = docx_content if docx_content else "Document content is not available."
 
-            # If context is empty, return "Answer not found"
-            if not context.strip():
-                context = "Answer not found."
         else:
-            context = "The query does not match any known categories. Please specify if you're asking about CSV data or policies."
+            context = "The query does not match any known categories. Please specify if you're asking about CSV data or documents."
 
         st.write("Context determined successfully.")
         return context
@@ -78,9 +71,29 @@ except Exception as e:
     st.error(f"An error occurred while establishing connection to S3: {e}")
     st.write("Error details:", str(e))
 
-# Load the policy documents and CSV data from S3
-policy_documents = load_policy_documents(conn)
-csv_df = load_csv_data_from_s3(conn, "fbc-hackathon-test/Test_sheet.csv")  # Replace with your CSV file key
+# Option for user to select which CSV file to load
+csv_file_options = {
+    "Operations ScoreCard": "fbc-hackathon-test/Operations_ScoreCard.csv",
+    "Home Care Consultant KPIs": "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - KPIs.csv",
+    "Balance Sheet Example": "fbc-hackathon-test/Balance Sheet Example - Sheet1.csv",
+    "Basic Income Statement Example": "fbc-hackathon-test/Basic Income Statement Example - Sheet1.csv",
+    "Network Median": "fbc-hackathon-test/Network Median.csv"
+}
+
+# Option for user to select which DOCX file to load
+docx_file_options = {
+    "Weekly Metrics Meeting": "fbc-hackathon-test/Weekly Metrics Meeting.docx",
+    "Yext Document": "fbc-hackathon-test/Yext.docx",
+    "HCC Job template": "fbc-hackathon-test/Yext.docx"
+}
+
+# User selects CSV file
+csv_file_selection = st.selectbox("Select a CSV file to load:", list(csv_file_options.keys()))
+csv_df = load_csv_data_from_s3(conn, csv_file_options[csv_file_selection])
+
+# User selects DOCX file
+docx_file_selection = st.selectbox("Select a DOCX file to load:", list(docx_file_options.keys()))
+docx_content = load_docx_data_from_s3(conn, docx_file_options[docx_file_selection])
 
 # Show title and description.
 st.title("FBC Chatbot - Here to Help")
@@ -88,10 +101,12 @@ st.title("FBC Chatbot - Here to Help")
 # Display sample questions for users to try
 st.markdown("""
     <p style='font-style: italic;'>
-        Here are some example questions you can ask me about the data:<br>
+        Here are some example questions you can ask me about the data or documents:<br>
         - "What are the top-performing franchises?"<br>
         - "Which franchises have the highest operating costs?"<br>
-        - "Can you identify any sales trends?"
+        - "Can you identify any sales trends?"<br>
+        - "What does the Yext document say?"<br>
+        - "Give me details from the Weekly Metrics Meeting."
     </p>
 """, unsafe_allow_html=True)
 
@@ -121,11 +136,11 @@ else:
             st.markdown(prompt)
 
         # Determine context based on the user's prompt
-        context = determine_context_and_response(prompt, policy_documents, csv_df)
+        context = determine_context_and_response(prompt, csv_df, docx_content)
 
         # Combine the context with the user's prompt for the OpenAI API.
         system_message = (
-            "You are a helpful assistant with access to the following policy documents and business data. "
+            "You are a helpful assistant with access to the following documents and business data. "
             "Use the content to answer questions accurately."
         )
 
@@ -149,3 +164,4 @@ else:
 
         except openai.error.OpenAIError as e:
             st.error(f"OpenAI API request failed: {e}")
+
