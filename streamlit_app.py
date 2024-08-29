@@ -87,10 +87,11 @@ def load_data(conn, files_needed):
         franchise_number = optional[1] if len(optional) > 1 else None
         if file_type == "csv":
             df = load_csv_data_from_s3(conn, file_key, optional[0] if optional else None)
-            if df is not None and franchise_number:
-                # Filter the DataFrame for the specific franchise number
-                df = df[df['Number'] == int(franchise_number)]
-                context += f"\nData from {file_key} for Franchise {franchise_number}:\n{df.head().to_string(index=False)}\n"
+            if df is not None:
+                if franchise_number:
+                    # Filter the DataFrame for the specific franchise number
+                    df = df[df['Number'] == int(franchise_number)]
+                context += f"\nData from {file_key}:\n{df.head().to_string(index=False)}\n"
         elif file_type == "text":
             text_content = load_text_data_from_s3(conn, file_key)
             if text_content:
