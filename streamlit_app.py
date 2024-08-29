@@ -15,21 +15,17 @@ KEY_COLUMNS = [
 ]
 
 # Function to load CSV data from S3 into a Pandas DataFrame
-def load_csv_data_from_s3(conn, file_key):
+def load_csv_data_from_s3(conn, file_key, filter_columns=None):
     try:
         # Read the CSV content from S3
         file_content = conn.read(file_key)
         
-        # Check if the content is already a DataFrame
-        if isinstance(file_content, pd.DataFrame):
-            df = file_content
-        else:
-            # Otherwise, assume it's a string and read it into a DataFrame
-            df = pd.read_csv(StringIO(file_content))
-
-        # If loading Operations_ScoreCard, filter to key columns
-        if file_key == "fbc-hackathon-test/Operations_ScoreCard.csv":
-            df = df[KEY_COLUMNS]
+        # Assume the content is a string and read it into a DataFrame
+        df = pd.read_csv(StringIO(file_content))
+        
+        # Filter to specific columns if required
+        if filter_columns:
+            df = df[filter_columns]
         
         return df
     except Exception as e:
@@ -48,29 +44,74 @@ def load_text_data_from_s3(conn, file_key):
         st.write("Error details:", str(e))
     return None
 
-# Function to determine whether to use text documents or CSV data
-def determine_context_and_response(prompt, csv_df, text_content):
+# Function to determine which files are needed based on the user's query
+def determine_files_needed(prompt):
+    prompt_lower = prompt.lower()
+    
+    files_needed = []
+
+    # Add logic to determine which files to load based on keywords in the prompt
+    if any(keyword in prompt_lower for keyword in ["revenue", "performance", "sales", "data", "franchise"]):
+        files_needed.append(("csv", "fbc-hackathon-test/Operations_ScoreCard.csv", KEY_COLUMNS))
+    if any(keyword in prompt_lower for keyword in ["kpi", "consultant", "development"]):
+        files_needed.append(("csv", "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - KPIs.csv", None))
+    if any(keyword in prompt_lower for keyword in ["balance", "sheet"]):
+        files_needed.append(("csv", "fbc-hackathon-test/Balance Sheet Example - Sheet1.csv", None))
+    if any(keyword in prompt_lower for keyword in ["income", "statement"]):
+        files_needed.append(("csv", "fbc-hackathon-test/Basic Income Statement Example - Sheet1.csv", None))
+    if any(keyword in prompt_lower for keyword in ["median", "network"]):
+        files_needed.append(("csv", "fbc-hackathon-test/Network Median.csv", None))
+    if any(keyword in prompt_lower for keyword in ["weekly", "metrics", "meeting"]):
+        files_needed.append(("text", "fbc-hackathon-test/Weekly Metrics Meeting.txt"))
+    if any(keyword in prompt_lower for keyword in ["yext"]):
+        files_needed.append(("text", "fbc-hackathon-test/Yext.txt"))
+    if any(keyword in prompt_lower for keyword in ["job", "template", "hcc"]):
+        files_needed.append(("text", "fbc-hackathon-test/HCC Job template.txt"))
+
+    return files_needed
+
+# Function to load the required data from the relevant files
+def load_data(conn, files_needed):
+    context = ""
+
+    for file_type, file_key, *filter_columns in files_needed:
+        if file_type == "csv":
+            df = load_csv_data_from_s3(conn, file_key, filter_columns[0] if filter_columns else None)
+            if df is not None:
+                context += f"\nData from {file_key}:\n{df.head().to_string(index=False)}\n"
+        elif file_type == "text":
+            text_content = load_text_data_from_s3(conn, file_key)
+            if text_content:
+                context += f"\nContent from {file_key}:\n{text_content[:1000]}\n"  # Limiting text content to first 1000 characters
+
+    return context
+
+# Function to generate response from OpenAI based on the context and prompt
+def generate_response(client, context, prompt):
+    system_message = (
+        "You are a helpful assistant with access to the following documents and business data. "
+        "Use the content to answer questions accurately."
+    )
+
+    messages = [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": f"{context}\n\n{prompt}"},
+    ]
+
     try:
-        st.write("Determining the context based on the user's prompt...")
-        prompt_lower = prompt.lower()
+        stream = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            stream=True,
+        )
 
-        if any(keyword in prompt_lower for keyword in ["csv", "data", "franchise", "trends", "performance", "sales"]):
-            if csv_df is not None:
-                context = f"Here is the data from the CSV file:\n{csv_df.to_string(index=False)}"
-            else:
-                context = "CSV data is not available."
-        elif any(keyword in prompt_lower for keyword in ["text", "document", "weekly metrics", "yext"]):
-            context = text_content if text_content else "Document content is not available."
+        # Stream the response to the chat and store it in session state.
+        with st.chat_message("assistant"):
+            response = st.write_stream(stream)
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
-        else:
-            context = "The query does not match any known categories. Please specify if you're asking about CSV data or documents."
-
-        st.write("Context determined successfully.")
-        return context
-    except Exception as e:
-        st.error(f"An error occurred while determining the context: {e}")
-        st.write("Error details:", str(e))
-        return "An error occurred while determining the context."
+    except openai.error.OpenAIError as e:
+        st.error(f"OpenAI API request failed: {e}")
 
 # Establish connection to S3
 try:
@@ -79,44 +120,8 @@ except Exception as e:
     st.error(f"An error occurred while establishing connection to S3: {e}")
     st.write("Error details:", str(e))
 
-# Option for user to select which CSV file to load
-csv_file_options = {
-    "Operations ScoreCard": "fbc-hackathon-test/Operations_ScoreCard.csv",
-    "Home Care Consultant KPIs": "fbc-hackathon-test/Home Care Consultant Development Plan 1.0 - KPIs.csv",
-    "Balance Sheet Example": "fbc-hackathon-test/Balance Sheet Example - Sheet1.csv",
-    "Basic Income Statement Example": "fbc-hackathon-test/Basic Income Statement Example - Sheet1.csv",
-    "Network Median": "fbc-hackathon-test/Network Median.csv"
-}
-
-# Option for user to select which plain text file to load
-text_file_options = {
-    "Weekly Metrics Meeting": "fbc-hackathon-test/Weekly Metrics Meeting.txt",
-    "Yext Document": "fbc-hackathon-test/Yext.txt",
-    "HCC Job template": "fbc-hackathon-test/HCC Job template.txt"
-}
-
-# User selects CSV file
-csv_file_selection = st.selectbox("Select a CSV file to load:", list(csv_file_options.keys()))
-csv_df = load_csv_data_from_s3(conn, csv_file_options[csv_file_selection])
-
-# User selects text file
-text_file_selection = st.selectbox("Select a text file to load:", list(text_file_options.keys()))
-text_content = load_text_data_from_s3(conn, text_file_options[text_file_selection])
-
 # Show title and description.
 st.title("FBC Chatbot - Here to Help")
-
-# Display sample questions for users to try
-st.markdown("""
-    <p style='font-style: italic;'>
-        Here are some example questions you can ask me about the data or documents:<br>
-        - "What are the top-performing franchises?"<br>
-        - "Which franchises have the highest operating costs?"<br>
-        - "Can you identify any sales trends?"<br>
-        - "What does the Yext document say?"<br>
-        - "Give me details from the Weekly Metrics Meeting."
-    </p>
-""", unsafe_allow_html=True)
 
 # Ask user for their OpenAI API key via `st.text_input`.
 openai_api_key = st.text_input("OpenAI API Key", type="password")
@@ -143,32 +148,11 @@ else:
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Determine context based on the user's prompt
-        context = determine_context_and_response(prompt, csv_df, text_content)
+        # Determine which files are needed based on the prompt
+        files_needed = determine_files_needed(prompt)
 
-        # Combine the context with the user's prompt for the OpenAI API.
-        system_message = (
-            "You are a helpful assistant with access to the following documents and business data. "
-            "Use the content to answer questions accurately."
-        )
+        # Load data from the required files
+        context = load_data(conn, files_needed)
 
-        messages = [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": f"{context}\n\n{prompt}"},
-        ]
-
-        # Generate a response using the OpenAI API.
-        try:
-            stream = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                stream=True,
-            )
-
-            # Stream the response to the chat and store it in session state.
-            with st.chat_message("assistant"):
-                response = st.write_stream(stream)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-
-        except openai.error.OpenAIError as e:
-            st.error(f"OpenAI API request failed: {e}")
+        # Generate a response from OpenAI based on the context and prompt
+        generate_response(client, context, prompt)
