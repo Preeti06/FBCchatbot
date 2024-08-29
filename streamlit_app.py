@@ -82,9 +82,6 @@ def determine_files_needed(prompt):
     if any(keyword in prompt_lower for keyword in ["job", "template", "hcc"]):
         files_needed.append(("text", "fbc-hackathon-test/HCC Job template.txt"))
 
-    # Debug: print the determined files
-    st.write("Files needed based on the prompt:", files_needed)
-
     return files_needed
 
 # Function to load the required data from the relevant files
@@ -113,7 +110,6 @@ def load_data(conn, files_needed):
 
     # Debug: print the files considered and the context generated
     st.write("Files considered:", files_considered)
-    st.write("Generated context:", context)
 
     return context, files_considered
 
@@ -126,9 +122,6 @@ def generate_response(client, context, prompt, files_considered):
 
     files_considered_str = "\n".join(files_considered)
     final_context = f"{context}\n\nFiles considered for this response:\n{files_considered_str}"
-
-    # Debug: print the final context before sending it to OpenAI
-    st.write("Final context sent to OpenAI:", final_context)
 
     messages = [
         {"role": "system", "content": system_message},
@@ -146,9 +139,6 @@ def generate_response(client, context, prompt, files_considered):
         with st.chat_message("assistant"):
             response = st.write_stream(stream)
         st.session_state.messages.append({"role": "assistant", "content": f"{response}\n\nFiles considered: {files_considered_str}"})
-
-        # Debug: print the response from OpenAI
-        st.write("Response from OpenAI:", response)
 
     except openai.error.OpenAIError as e:
         st.error(f"OpenAI API request failed: {e}")
